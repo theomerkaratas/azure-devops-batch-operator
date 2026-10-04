@@ -10,8 +10,13 @@ func TestLoadConfigFromFile(t *testing.T) {
 	path := writeTestConfig(t)
 	t.Setenv(configPathEnv, path)
 	t.Setenv("AZURE_DEVOPS_URL", "")
-	os.Unsetenv("AZURE_DEVOPS_URL")
-	os.Unsetenv("AZURE_DEVOPS_PAT_READ")
+	if err := os.Unsetenv("AZURE_DEVOPS_URL"); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("AZURE_DEVOPS_PAT_READ", "")
+	if err := os.Unsetenv("AZURE_DEVOPS_PAT_READ"); err != nil {
+		t.Fatal(err)
+	}
 
 	cfg, err := LoadConfig("read")
 	if err != nil {

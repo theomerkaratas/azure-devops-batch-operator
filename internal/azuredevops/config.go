@@ -97,7 +97,7 @@ func LoadConfig(level string) (Config, error) {
 			return Config{}, fileErr
 		}
 		if orgURL == "" {
-			return Config{}, fmt.Errorf("Azure DevOps URL is not configured; set AZURE_DEVOPS_URL or azure_devops_url in %s", path)
+			return Config{}, fmt.Errorf("Azure DevOps URL is not configured; set AZURE_DEVOPS_URL or azure_devops_url in %s", path) //nolint:staticcheck // Azure DevOps is a proper name.
 		}
 		return Config{}, fmt.Errorf("%s token is not configured; set %s or tokens.%s in %s", level, envVar, strings.ReplaceAll(level, "-", "_"), path)
 	}

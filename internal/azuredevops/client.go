@@ -20,7 +20,7 @@ func (c Config) Get(url string, out interface{}) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -31,7 +31,7 @@ func (c Config) Get(url string, out interface{}) error {
 		return fmt.Errorf("request failed (HTTP %d): %s", resp.StatusCode, string(body))
 	}
 
-	if out == nil {
+	if out == nil || len(body) == 0 {
 		return nil
 	}
 	return json.Unmarshal(body, out)
@@ -72,7 +72,7 @@ func (c Config) send(method, url string, body interface{}, out interface{}) erro
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -83,7 +83,7 @@ func (c Config) send(method, url string, body interface{}, out interface{}) erro
 		return fmt.Errorf("request failed (HTTP %d): %s", resp.StatusCode, string(respBody))
 	}
 
-	if out == nil {
+	if out == nil || len(respBody) == 0 {
 		return nil
 	}
 	return json.Unmarshal(respBody, out)
