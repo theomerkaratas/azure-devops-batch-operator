@@ -77,8 +77,6 @@ func (f *field) value() string {
 	return strings.TrimSpace(f.input.Value())
 }
 
-func (f *field) isYes() bool { return f.value() == "yes" }
-
 // commandSpec describes one operation offered by the TUI: which package to run, which
 // form fields to collect, and how to turn the collected values into CLI arguments.
 type commandSpec struct {

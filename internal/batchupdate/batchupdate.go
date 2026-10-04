@@ -151,6 +151,9 @@ func Run(o Options, comment string, mutate Mutator) error {
 		ok++
 	}
 	fmt.Printf("\n=== DONE ===\nSucceeded: %d | Failed: %d | Skipped: %d\n", ok, failed, unchanged)
+	if failed > 0 {
+		return fmt.Errorf("%d pipeline update(s) failed", failed)
+	}
 	return nil
 }
 

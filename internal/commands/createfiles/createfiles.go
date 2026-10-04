@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 const usage = `Creates empty file(s) in a target folder; the folder is created if it doesn't exist.
@@ -30,23 +31,38 @@ func Main() {
 	}
 }
 func run(targetPath string, filenames []string) error {
+	targetPath, err := filepath.Abs(targetPath)
+	if err != nil {
+		return fmt.Errorf("resolve target path: %w", err)
+	}
 	if err := os.MkdirAll(targetPath, 0o755); err != nil {
 		return err
 	}
 	for _, filename := range filenames {
+		if filename == "" || filepath.IsAbs(filename) {
+			return fmt.Errorf("invalid filename %q: must be a relative file path", filename)
+		}
 		filePath := filepath.Join(targetPath, filename)
+		rel, err := filepath.Rel(targetPath, filePath)
+		if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+			return fmt.Errorf("invalid filename %q: path escapes target folder", filename)
+		}
 		if err := os.MkdirAll(filepath.Dir(filePath), 0o755); err != nil {
 			return err
 		}
 		if _, err := os.Stat(filePath); err == nil {
 			fmt.Printf("Skipped (already exists): %s\n", filePath)
 			continue
+		} else if !os.IsNotExist(err) {
+			return err
 		}
 		f, err := os.OpenFile(filePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o644)
 		if err != nil {
 			return err
 		}
-		f.Close()
+		if err := f.Close(); err != nil {
+			return fmt.Errorf("close %s: %w", filePath, err)
+		}
 		fmt.Printf("Created: %s\n", filePath)
 	}
 	return nil

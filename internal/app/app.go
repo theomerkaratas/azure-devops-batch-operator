@@ -110,9 +110,9 @@ func usage(w *os.File) {
 	}
 	sort.Strings(names)
 
-	fmt.Fprintf(w, "%s %s: batch operations for Azure DevOps release pipelines.\n\n", Name, version)
-	fmt.Fprintf(w, "Usage:\n  %s                    start the interactive UI\n", Name)
-	fmt.Fprintf(w, "  %s <command> [args]    run one command (see `%s <command> --help`)\n", Name, Name)
-	fmt.Fprintf(w, "  %s version             print the version\n\nCommands:\n  %s\n", Name, strings.Join(names, "\n  "))
-	fmt.Fprintf(w, "  %s config-path         print the configuration file path\n", Name)
+	_, _ = fmt.Fprintf(w, "%s %s: batch operations for Azure DevOps release pipelines.\n\n", Name, version)
+	_, _ = fmt.Fprintf(w, "Usage:\n  %s                    start the interactive UI\n", Name)
+	_, _ = fmt.Fprintf(w, "  %s <command> [args]    run one command (see `%s <command> --help`)\n", Name, Name)
+	_, _ = fmt.Fprintf(w, "  %s version             print the version\n\nCommands:\n  %s\n", Name, strings.Join(names, "\n  "))
+	_, _ = fmt.Fprintf(w, "  %s config-path         print the configuration file path\n", Name)
 }
