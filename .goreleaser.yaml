@@ -65,14 +65,18 @@ homebrew_casks:
         install: |
           if OS.mac?
             system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/a22r"]
-            config_dir = Pathname.new(Dir.home)/"Library/Application Support/a22r"
+            config_dir = Pathname.new(ENV["XDG_CONFIG_HOME"] || (Pathname.new(Dir.home)/".config"))/"a22r"
             config_file = config_dir/"config.yml"
             example_file = staged_path/"config.example.yml"
+            onprem_example = staged_path/"config.onprem.example.yml"
+
+            config_dir.mkpath
             if !config_file.exist? && example_file.exist?
-              config_dir.mkpath
               FileUtils.cp(example_file, config_file)
               File.chmod(0600, config_file)
             end
+            FileUtils.cp(example_file, config_dir/"config.example.yml") if example_file.exist?
+            FileUtils.cp(onprem_example, config_dir/"config.onprem.example.yml") if onprem_example.exist?
           end
 
 changelog:

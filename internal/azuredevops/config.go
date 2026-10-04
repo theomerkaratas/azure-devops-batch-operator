@@ -50,6 +50,26 @@ func ConfigPath() (string, error) {
 	if path := strings.TrimSpace(os.Getenv(configPathEnv)); path != "" {
 		return path, nil
 	}
+
+	home, err := os.UserHomeDir()
+	if err == nil && home != "" {
+		xdgConfig := strings.TrimSpace(os.Getenv("XDG_CONFIG_HOME"))
+		if xdgConfig == "" {
+			xdgConfig = filepath.Join(home, ".config")
+		}
+		newPath := filepath.Join(xdgConfig, "a22r", "config.yml")
+
+		// If legacy macOS config in Application Support exists, use it for backwards compatibility.
+		legacyPath := filepath.Join(home, "Library", "Application Support", "a22r", "config.yml")
+		if _, err := os.Stat(newPath); err != nil && os.IsNotExist(err) {
+			if _, legErr := os.Stat(legacyPath); legErr == nil {
+				return legacyPath, nil
+			}
+		}
+
+		return newPath, nil
+	}
+
 	dir, err := os.UserConfigDir()
 	if err != nil {
 		return "", fmt.Errorf("find user config directory: %w", err)

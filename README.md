@@ -103,8 +103,7 @@ a22r config-path
 
 Default locations:
 
-- macOS: `~/Library/Application Support/a22r/config.yml`
-- Linux and Ubuntu: `${XDG_CONFIG_HOME:-~/.config}/a22r/config.yml`
+- macOS and Linux: `${XDG_CONFIG_HOME:-~/.config}/a22r/config.yml` (legacy macOS path `~/Library/Application Support/a22r/config.yml` is also supported)
 - Windows: `%AppData%\a22r\config.yml`
 
 Edit the file and provide only the tokens required by the operations you use:

@@ -82,8 +82,7 @@ mkdir -p "$dir"
 install -m 0755 "$tmp/$BIN" "$dir/$BIN"
 
 case "$os" in
-  darwin) config_dir="$HOME/Library/Application Support/a22r" ;;
-  linux)  config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/a22r" ;;
+  darwin|linux) config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/a22r" ;;
 esac
 config_file="$config_dir/config.yml"
 if [ ! -e "$config_file" ]; then
