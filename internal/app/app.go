@@ -1,0 +1,118 @@
+// Package app is the single entry point shared by the a22r binary and `go run ./cmd/tui`.
+// With no arguments it starts the TUI, otherwise it runs the named command.
+package app
+
+import (
+	"fmt"
+	"os"
+	"sort"
+	"strings"
+
+	"github.com/omerkaratas/azure-devops-go-automations/internal/azuredevops"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/cancelreleases"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/clonepipeline"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/comparepipelines"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/createfiles"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpools"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listreleases"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/renameormovepipelines"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/showpipelineagentjob"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/showpipelineschedule"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/showpipelinesteps"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/showpipelinevariables"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/showreleasehistory"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/showreleasestatus"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/triggerrelease"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineagentjob"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinedemands"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineschedule"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinevariables"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/tui"
+)
+
+// Name is the installed binary name.
+const Name = "a22r"
+
+// version is set at release time: -ldflags "-X .../internal/app.version=v1.2.3"
+var version = "dev"
+
+var commands = map[string]func(){
+	"cancel-releases":           cancelreleases.Main,
+	"clone-pipeline":            clonepipeline.Main,
+	"compare-pipelines":         comparepipelines.Main,
+	"create-files":              createfiles.Main,
+	"list-pools":                listpools.Main,
+	"list-releases":             listreleases.Main,
+	"rename-or-move-pipelines":  renameormovepipelines.Main,
+	"show-pipeline-agent-job":   showpipelineagentjob.Main,
+	"show-pipeline-schedule":    showpipelineschedule.Main,
+	"show-pipeline-steps":       showpipelinesteps.Main,
+	"show-pipeline-variables":   showpipelinevariables.Main,
+	"show-release-history":      showreleasehistory.Main,
+	"show-release-status":       showreleasestatus.Main,
+	"trigger-release":           triggerrelease.Main,
+	"update-pipeline-agent-job": updatepipelineagentjob.Main,
+	"update-pipeline-demands":   updatepipelinedemands.Main,
+	"update-pipeline-schedule":  updatepipelineschedule.Main,
+	"update-pipeline-variables": updatepipelinevariables.Main,
+}
+
+// Main dispatches on os.Args and never returns normally for a command (commands call os.Exit).
+func Main() {
+	args := os.Args[1:]
+	if len(args) == 0 {
+		runTUI()
+		return
+	}
+
+	switch args[0] {
+	case "tui":
+		runTUI()
+		return
+	case "version", "--version", "-v":
+		fmt.Printf("%s %s\n", Name, version)
+		return
+	case "config-path":
+		path, err := azuredevops.ConfigPath()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Error:", err)
+			os.Exit(1)
+		}
+		fmt.Println(path)
+		return
+	case "help", "--help", "-h":
+		usage(os.Stdout)
+		return
+	}
+
+	run, ok := commands[args[0]]
+	if !ok {
+		fmt.Fprintf(os.Stderr, "unknown command %q\n\n", args[0])
+		usage(os.Stderr)
+		os.Exit(2)
+	}
+	// Commands parse os.Args[1:] themselves.
+	os.Args = append([]string{args[0]}, args[1:]...)
+	run()
+}
+
+func runTUI() {
+	if err := tui.Run(); err != nil {
+		fmt.Fprintln(os.Stderr, "Error:", err)
+		os.Exit(1)
+	}
+}
+
+func usage(w *os.File) {
+	names := make([]string, 0, len(commands))
+	for n := range commands {
+		names = append(names, n)
+	}
+	sort.Strings(names)
+
+	fmt.Fprintf(w, "%s %s: batch operations for Azure DevOps release pipelines.\n\n", Name, version)
+	fmt.Fprintf(w, "Usage:\n  %s                    start the interactive UI\n", Name)
+	fmt.Fprintf(w, "  %s <command> [args]    run one command (see `%s <command> --help`)\n", Name, Name)
+	fmt.Fprintf(w, "  %s version             print the version\n\nCommands:\n  %s\n", Name, strings.Join(names, "\n  "))
+	fmt.Fprintf(w, "  %s config-path         print the configuration file path\n", Name)
+}
