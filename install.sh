@@ -70,6 +70,9 @@ else
     '  read_write: ""' \
     '  manage: ""' > "$tmp/config.example.yml"
 fi
+if tar -tzf "$tmp/$asset" | grep -q '^config.onprem.example.yml$'; then
+  tar -xzf "$tmp/$asset" -C "$tmp" config.onprem.example.yml
+fi
 
 if [ -n "${INSTALL_DIR:-}" ]; then
   dir="$INSTALL_DIR"
@@ -85,13 +88,15 @@ case "$os" in
   darwin|linux) config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/a22r" ;;
 esac
 config_file="$config_dir/config.yml"
+mkdir -p "$config_dir"
 if [ ! -e "$config_file" ]; then
-  mkdir -p "$config_dir"
   install -m 0600 "$tmp/config.example.yml" "$config_file"
   echo "Created configuration template at $config_file"
 else
   echo "Kept existing configuration at $config_file"
 fi
+[ -f "$tmp/config.example.yml" ] && cp -f "$tmp/config.example.yml" "$config_dir/config.example.yml"
+[ -f "$tmp/config.onprem.example.yml" ] && cp -f "$tmp/config.onprem.example.yml" "$config_dir/config.onprem.example.yml"
 
 echo "Installed $("$dir/$BIN" version) to $dir/$BIN"
 case ":$PATH:" in
