@@ -34,7 +34,7 @@ func (c Config) GetProjectQueues(project string) map[int]string {
 	queueCacheMu.Unlock()
 
 	mapping := map[int]string{}
-	url := fmt.Sprintf("%s/%s/%s/_apis/build/definitions?api-version=6.0", c.OrgURL, Collection, project)
+	url := fmt.Sprintf("%s/_apis/build/definitions?api-version=%s", c.projectBaseURL(project), c.apiVersion())
 	var resp buildDefinitionsResponse
 	if err := c.Get(url, &resp); err == nil {
 		for _, item := range resp.Value {
@@ -76,7 +76,7 @@ func (c Config) ResolvePoolName(project string, queueID int) string {
 		return name
 	}
 
-	url := fmt.Sprintf("%s/%s/%s/_apis/distributedtask/queues/%d?api-version=6.0", c.OrgURL, Collection, project, queueID)
+	url := fmt.Sprintf("%s/_apis/distributedtask/queues/%d?api-version=%s", c.projectBaseURL(project), queueID, c.apiVersion())
 	var queue distributedTaskQueue
 	if err := c.Get(url, &queue); err == nil {
 		if queue.Pool.Name != "" {

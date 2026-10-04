@@ -1,6 +1,12 @@
 # Copy this file to the platform-specific location shown by `a22r config-path`.
 # Keep this file private because Azure DevOps personal access tokens are secrets.
+deployment: cloud
 azure_devops_url: "https://dev.azure.com/your-org"
+
+# For Azure DevOps Server, use these values instead:
+# deployment: on-prem
+# azure_devops_url: "https://devops.example.com/tfs"
+# collection: "DefaultCollection"
 
 # Used when a command's --level option is omitted: read, read-write, or manage.
 default_token: read

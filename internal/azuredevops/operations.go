@@ -5,9 +5,9 @@ import (
 	"strings"
 )
 
-// ListProjects returns the names of all projects in the collection.
+// ListProjects returns the names of all projects in the organization or collection.
 func (c Config) ListProjects() ([]string, error) {
-	url := fmt.Sprintf("%s/%s/_apis/projects?$top=500&api-version=6.0", c.OrgURL, Collection)
+	url := fmt.Sprintf("%s/_apis/projects?$top=500&api-version=%s", c.organizationBaseURL(), c.apiVersion())
 	var resp struct {
 		Value []struct {
 			Name string `json:"name"`
@@ -41,9 +41,9 @@ type Agent struct {
 	OSDescription string `json:"osDescription"`
 }
 
-// ListPools returns all agent pools of the collection.
+// ListPools returns all agent pools of the organization or collection.
 func (c Config) ListPools() ([]Pool, error) {
-	url := fmt.Sprintf("%s/%s/_apis/distributedtask/pools?api-version=6.0", c.OrgURL, Collection)
+	url := fmt.Sprintf("%s/_apis/distributedtask/pools?api-version=%s", c.organizationBaseURL(), c.apiVersion())
 	var resp struct {
 		Value []Pool `json:"value"`
 	}
@@ -55,7 +55,7 @@ func (c Config) ListPools() ([]Pool, error) {
 
 // ListPoolAgents returns the agents (members) of a pool.
 func (c Config) ListPoolAgents(poolID int) ([]Agent, error) {
-	url := fmt.Sprintf("%s/%s/_apis/distributedtask/pools/%d/agents?api-version=6.0", c.OrgURL, Collection, poolID)
+	url := fmt.Sprintf("%s/_apis/distributedtask/pools/%d/agents?api-version=%s", c.organizationBaseURL(), poolID, c.apiVersion())
 	var resp struct {
 		Value []Agent `json:"value"`
 	}
@@ -67,7 +67,7 @@ func (c Config) ListPoolAgents(poolID int) ([]Agent, error) {
 
 // CreateDefinitionRaw creates a new release definition (POST) from an untyped map.
 func (c Config) CreateDefinitionRaw(project string, definition map[string]interface{}, comment string) (map[string]interface{}, error) {
-	url := fmt.Sprintf("%s/%s/%s/_apis/release/definitions?api-version=6.0", c.OrgURL, Collection, project)
+	url := fmt.Sprintf("%s/_apis/release/definitions?api-version=%s", c.releaseProjectBaseURL(project), c.apiVersion())
 	if comment != "" {
 		definition["comment"] = comment
 	}
@@ -81,7 +81,7 @@ func (c Config) CreateDefinitionRaw(project string, definition map[string]interf
 
 // CreateFolder creates a release folder; an already-existing folder is not an error.
 func (c Config) CreateFolder(project, path string) error {
-	url := fmt.Sprintf("%s/%s/%s/_apis/release/folders?api-version=6.0", c.OrgURL, Collection, project)
+	url := fmt.Sprintf("%s/_apis/release/folders?api-version=%s", c.releaseProjectBaseURL(project), c.apiVersion())
 	err := c.Post(url, map[string]string{"path": path}, nil)
 	if err != nil && strings.Contains(strings.ToLower(err.Error()), "already exists") {
 		return nil
@@ -91,15 +91,19 @@ func (c Config) CreateFolder(project, path string) error {
 
 // CancelReleaseEnvironment cancels a queued or in-progress stage deployment.
 func (c Config) CancelReleaseEnvironment(project string, releaseID, environmentID int) error {
+	version := "6.0-preview.6"
+	if c.Deployment == DeploymentCloud {
+		version = c.apiVersion()
+	}
 	url := fmt.Sprintf(
-		"%s/%s/%s/_apis/release/releases/%d/environments/%d?api-version=6.0-preview.6",
-		c.OrgURL, Collection, project, releaseID, environmentID,
+		"%s/_apis/release/releases/%d/environments/%d?api-version=%s",
+		c.releaseProjectBaseURL(project), releaseID, environmentID, version,
 	)
 	return c.Patch(url, map[string]string{"status": "canceled", "comment": "Canceled by azure-devops-batch-operator"}, nil)
 }
 
 // AbandonRelease abandons a release so it can no longer be deployed.
 func (c Config) AbandonRelease(project string, releaseID int) error {
-	url := fmt.Sprintf("%s/%s/%s/_apis/release/releases/%d?api-version=6.0", c.OrgURL, Collection, project, releaseID)
+	url := fmt.Sprintf("%s/_apis/release/releases/%d?api-version=%s", c.releaseProjectBaseURL(project), releaseID, c.apiVersion())
 	return c.Patch(url, map[string]string{"status": "abandoned", "comment": "Abandoned by azure-devops-batch-operator"}, nil)
 }
