@@ -1,0 +1,30 @@
+version: 2
+project_name: azure-devops-batch-operator
+
+builds:
+  - id: a22r
+    main: ./cmd/a22r
+    binary: a22r
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w -X github.com/omerkaratas/azure-devops-go-automations/internal/app.version={{ .Tag }}
+
+# Version-less asset names keep the stable .../releases/latest/download/<asset> URLs working.
+archives:
+  - id: a22r
+    formats: [tar.gz]
+    name_template: "a22r_{{ .Os }}_{{ .Arch }}"
+    files:
+      - config.example.yml
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
