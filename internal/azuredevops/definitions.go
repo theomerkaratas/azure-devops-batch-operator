@@ -147,7 +147,7 @@ func (c Config) FindDefinition(project, path, name string) (ReleaseDefinition, e
 
 // GetDefinitionDetail fetches full details (stages, tasks, triggers, etc.) for a release definition.
 func (c Config) GetDefinitionDetail(project string, definitionID int) (DefinitionDetail, error) {
-	url := fmt.Sprintf("%s/%s/%s/_apis/release/definitions/%d?api-version=6.0", c.OrgURL, Collection, project, definitionID)
+	url := fmt.Sprintf("%s/_apis/release/definitions/%d?api-version=%s", c.releaseProjectBaseURL(project), definitionID, c.apiVersion())
 	var detail DefinitionDetail
 	if err := c.Get(url, &detail); err != nil {
 		return DefinitionDetail{}, err
@@ -172,7 +172,7 @@ func (c Config) ResolveDefinition(pipelinePath string) (DefinitionDetail, error)
 // so it can be safely modified and PUT back without losing data the typed DefinitionDetail
 // struct doesn't model.
 func (c Config) GetDefinitionDetailRaw(project string, definitionID int) (map[string]interface{}, error) {
-	url := fmt.Sprintf("%s/%s/%s/_apis/release/definitions/%d?api-version=6.0", c.OrgURL, Collection, project, definitionID)
+	url := fmt.Sprintf("%s/_apis/release/definitions/%d?api-version=%s", c.releaseProjectBaseURL(project), definitionID, c.apiVersion())
 	var detail map[string]interface{}
 	if err := c.Get(url, &detail); err != nil {
 		return nil, err
@@ -184,7 +184,7 @@ func (c Config) GetDefinitionDetailRaw(project string, definitionID int) (map[st
 // UpdateDefinitionRaw updates a release definition (PUT) from an untyped map, as returned by
 // GetDefinitionDetailRaw.
 func (c Config) UpdateDefinitionRaw(project string, definition map[string]interface{}, comment string) (map[string]interface{}, error) {
-	url := fmt.Sprintf("%s/%s/%s/_apis/release/definitions?api-version=6.0", c.OrgURL, Collection, project)
+	url := fmt.Sprintf("%s/_apis/release/definitions?api-version=%s", c.releaseProjectBaseURL(project), c.apiVersion())
 	if comment != "" {
 		definition["comment"] = comment
 	}

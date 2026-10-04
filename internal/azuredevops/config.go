@@ -4,6 +4,7 @@ package azuredevops
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,8 +12,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Collection is the Azure DevOps collection shared by all scripts.
-const Collection = "DefaultCollection"
+const (
+	DeploymentCloud   = "cloud"
+	DeploymentOnPrem  = "on-prem"
+	defaultCollection = "DefaultCollection"
+)
 
 const configPathEnv = "A22R_CONFIG"
 
@@ -24,7 +28,9 @@ var patEnvVars = map[string]string{
 }
 
 type fileConfig struct {
+	Deployment     string `yaml:"deployment"`
 	AzureDevOpsURL string `yaml:"azure_devops_url"`
+	Collection     string `yaml:"collection"`
 	DefaultToken   string `yaml:"default_token"`
 	Tokens         struct {
 		Read      string `yaml:"read"`
@@ -53,8 +59,11 @@ func ConfigPath() (string, error) {
 
 // Config holds the values needed to call the Azure DevOps API.
 type Config struct {
-	OrgURL string
-	PAT    string
+	Deployment string
+	OrgURL     string
+	ReleaseURL string
+	Collection string
+	PAT        string
 }
 
 // DefaultLevel returns the configured default token level, or fallback when no
@@ -79,10 +88,18 @@ func LoadConfig(level string) (Config, error) {
 	}
 
 	fc, fileErr := readFileConfig()
+	deployment := strings.TrimSpace(fc.Deployment)
 	orgURL := strings.TrimSpace(fc.AzureDevOpsURL)
+	collection := strings.TrimSpace(fc.Collection)
 	pat := tokenFromFile(fc, level)
+	if value, ok := os.LookupEnv("A22R_DEPLOYMENT"); ok {
+		deployment = strings.TrimSpace(value)
+	}
 	if value, ok := os.LookupEnv("AZURE_DEVOPS_URL"); ok {
 		orgURL = strings.TrimSpace(value)
+	}
+	if value, ok := os.LookupEnv("A22R_COLLECTION"); ok {
+		collection = strings.TrimSpace(value)
 	}
 	if value, ok := os.LookupEnv(envVar); ok {
 		pat = strings.TrimSpace(value)
@@ -102,7 +119,49 @@ func LoadConfig(level string) (Config, error) {
 		return Config{}, fmt.Errorf("%s token is not configured; set %s or tokens.%s in %s", level, envVar, strings.ReplaceAll(level, "-", "_"), path)
 	}
 
-	return Config{OrgURL: strings.TrimRight(orgURL, "/"), PAT: pat}, nil
+	if deployment == "" {
+		deployment = DeploymentOnPrem
+	}
+	if deployment != DeploymentCloud && deployment != DeploymentOnPrem {
+		return Config{}, fmt.Errorf("invalid deployment %q (choices: %s, %s)", deployment, DeploymentCloud, DeploymentOnPrem)
+	}
+	if collection == "" {
+		collection = defaultCollection
+	}
+
+	orgURL = strings.TrimRight(orgURL, "/")
+	releaseURL := orgURL
+	if deployment == DeploymentCloud {
+		var err error
+		releaseURL, err = cloudReleaseURL(orgURL)
+		if err != nil {
+			return Config{}, err
+		}
+	}
+
+	return Config{
+		Deployment: deployment,
+		OrgURL:     orgURL,
+		ReleaseURL: releaseURL,
+		Collection: collection,
+		PAT:        pat,
+	}, nil
+}
+
+func cloudReleaseURL(orgURL string) (string, error) {
+	u, err := url.Parse(orgURL)
+	if err != nil {
+		return "", fmt.Errorf("parse Azure DevOps cloud URL: %w", err)
+	}
+	if u.Scheme != "https" || !strings.EqualFold(u.Host, "dev.azure.com") {
+		return "", fmt.Errorf("cloud azure_devops_url must have the form https://dev.azure.com/{organization}")
+	}
+	parts := strings.Split(strings.Trim(u.EscapedPath(), "/"), "/")
+	if len(parts) != 1 || parts[0] == "" || u.RawQuery != "" || u.Fragment != "" {
+		return "", fmt.Errorf("cloud azure_devops_url must have the form https://dev.azure.com/{organization}")
+	}
+	u.Host = "vsrm.dev.azure.com"
+	return strings.TrimRight(u.String(), "/"), nil
 }
 
 func readFileConfig() (fileConfig, error) {

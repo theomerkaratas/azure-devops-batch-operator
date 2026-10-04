@@ -60,6 +60,7 @@ Default locations:
 Edit the file and provide only the tokens required by the operations you use:
 
 ```yaml
+deployment: cloud
 azure_devops_url: "https://dev.azure.com/your-organization"
 
 # read, read-write, or manage
@@ -70,6 +71,22 @@ tokens:
   read_write: "your-read-write-token"
   manage: "your-manage-token"
 ```
+
+For an on-prem Azure DevOps installation, select `on-prem` and provide the server URL and collection:
+
+```yaml
+deployment: on-prem
+azure_devops_url: "https://devops.example.com/tfs"
+collection: "DefaultCollection"
+
+default_token: read
+tokens:
+  read: "your-read-token"
+  read_write: "your-read-write-token"
+  manage: "your-manage-token"
+```
+
+`deployment` defaults to `on-prem` for compatibility with configurations created before cloud support was added. `collection` is used only for `on-prem` deployments and defaults to `DefaultCollection`.
 
 Treat this file as a secret. Do not commit it or share its contents. The repository's [config.example.yml](config.example.yml) contains an empty template safe to copy.
 
@@ -85,6 +102,8 @@ Values are resolved in this order, from highest to lowest priority:
 Supported environment variables:
 
 - `A22R_CONFIG`: use a custom configuration file path.
+- `A22R_DEPLOYMENT`: override `deployment` (`cloud` or `on-prem`).
+- `A22R_COLLECTION`: override the on-prem collection name.
 - `A22R_DEFAULT_TOKEN`: override `default_token`.
 - `AZURE_DEVOPS_URL`: override `azure_devops_url`.
 - `AZURE_DEVOPS_PAT_READ`: override `tokens.read`.

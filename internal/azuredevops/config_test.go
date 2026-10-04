@@ -48,6 +48,79 @@ func TestEnvironmentOverridesFile(t *testing.T) {
 	}
 }
 
+func TestLoadCloudConfig(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.yml")
+	data := []byte("deployment: cloud\nazure_devops_url: https://dev.azure.com/example/\ntokens:\n  read: read-secret\n")
+	if err := os.WriteFile(path, data, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv(configPathEnv, path)
+	unsetTestEnv(t, "AZURE_DEVOPS_URL")
+	unsetTestEnv(t, "AZURE_DEVOPS_PAT_READ")
+	unsetTestEnv(t, "A22R_DEPLOYMENT")
+	unsetTestEnv(t, "A22R_COLLECTION")
+
+	cfg, err := LoadConfig("read")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.Deployment != DeploymentCloud {
+		t.Fatalf("deployment = %q, want %q", cfg.Deployment, DeploymentCloud)
+	}
+	if got, want := cfg.organizationBaseURL(), "https://dev.azure.com/example"; got != want {
+		t.Fatalf("organizationBaseURL() = %q, want %q", got, want)
+	}
+	if got, want := cfg.releaseProjectBaseURL("My Project"), "https://vsrm.dev.azure.com/example/My%20Project"; got != want {
+		t.Fatalf("releaseProjectBaseURL() = %q, want %q", got, want)
+	}
+	if got := cfg.apiVersion(); got != "7.1" {
+		t.Fatalf("apiVersion() = %q, want 7.1", got)
+	}
+}
+
+func TestLoadOnPremConfigWithCustomCollection(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.yml")
+	data := []byte("deployment: on-prem\nazure_devops_url: https://devops.example.com/tfs/\ncollection: Team Collection\ntokens:\n  read: read-secret\n")
+	if err := os.WriteFile(path, data, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv(configPathEnv, path)
+	unsetTestEnv(t, "AZURE_DEVOPS_URL")
+	unsetTestEnv(t, "AZURE_DEVOPS_PAT_READ")
+	unsetTestEnv(t, "A22R_DEPLOYMENT")
+	unsetTestEnv(t, "A22R_COLLECTION")
+
+	cfg, err := LoadConfig("read")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := cfg.projectBaseURL("My Project"), "https://devops.example.com/tfs/Team%20Collection/My%20Project"; got != want {
+		t.Fatalf("projectBaseURL() = %q, want %q", got, want)
+	}
+	if got, want := cfg.releaseProjectBaseURL("My Project"), cfg.projectBaseURL("My Project"); got != want {
+		t.Fatalf("releaseProjectBaseURL() = %q, want %q", got, want)
+	}
+	if got := cfg.apiVersion(); got != "6.0" {
+		t.Fatalf("apiVersion() = %q, want 6.0", got)
+	}
+}
+
+func TestLoadCloudConfigRejectsOnPremURL(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.yml")
+	data := []byte("deployment: cloud\nazure_devops_url: https://devops.example.com/tfs\ntokens:\n  read: read-secret\n")
+	if err := os.WriteFile(path, data, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv(configPathEnv, path)
+	unsetTestEnv(t, "AZURE_DEVOPS_URL")
+	unsetTestEnv(t, "AZURE_DEVOPS_PAT_READ")
+	unsetTestEnv(t, "A22R_DEPLOYMENT")
+
+	if _, err := LoadConfig("read"); err == nil {
+		t.Fatal("LoadConfig() accepted an on-prem URL for a cloud deployment")
+	}
+}
+
 func writeTestConfig(t *testing.T) string {
 	t.Helper()
 	path := filepath.Join(t.TempDir(), "config.yml")
@@ -56,4 +129,12 @@ func writeTestConfig(t *testing.T) string {
 		t.Fatal(err)
 	}
 	return path
+}
+
+func unsetTestEnv(t *testing.T, name string) {
+	t.Helper()
+	t.Setenv(name, "")
+	if err := os.Unsetenv(name); err != nil {
+		t.Fatal(err)
+	}
 }

@@ -5,7 +5,7 @@ import "fmt"
 // CreateRelease creates a new release for a definition. manualEnvironments names stages to
 // start manually; other stages follow their configured triggers.
 func (c Config) CreateRelease(project string, definitionID int, description string, manualEnvironments []string) (Release, error) {
-	url := fmt.Sprintf("%s/%s/%s/_apis/release/releases?api-version=6.0", c.OrgURL, Collection, project)
+	url := fmt.Sprintf("%s/_apis/release/releases?api-version=%s", c.releaseProjectBaseURL(project), c.apiVersion())
 	body := map[string]interface{}{
 		"definitionId": definitionID,
 		"description":  description,

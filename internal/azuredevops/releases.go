@@ -19,7 +19,7 @@ type releaseDefinitionsResponse struct {
 
 // ListReleaseDefinitions fetches all release definitions for a project.
 func (c Config) ListReleaseDefinitions(project string) ([]ReleaseDefinition, error) {
-	url := fmt.Sprintf("%s/%s/%s/_apis/release/definitions?api-version=6.0", c.OrgURL, Collection, project)
+	url := fmt.Sprintf("%s/_apis/release/definitions?api-version=%s", c.releaseProjectBaseURL(project), c.apiVersion())
 	var resp releaseDefinitionsResponse
 	if err := c.Get(url, &resp); err != nil {
 		return nil, err

@@ -62,6 +62,7 @@ if tar -tzf "$tmp/$asset" | grep -q '^config.example.yml$'; then
 else
   # Compatibility with releases created before the config template was bundled.
   printf '%s\n' \
+    'deployment: cloud' \
     'azure_devops_url: "https://dev.azure.com/your-org"' \
     'default_token: read' \
     'tokens:' \

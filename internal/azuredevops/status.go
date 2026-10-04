@@ -29,8 +29,8 @@ type Release struct {
 // including per-stage statuses.
 func (c Config) ListReleases(project string, definitionID, top int) ([]Release, error) {
 	url := fmt.Sprintf(
-		"%s/%s/%s/_apis/release/releases?definitionId=%d&$top=%d&$expand=environments&queryOrder=descending&api-version=6.0",
-		c.OrgURL, Collection, project, definitionID, top,
+		"%s/_apis/release/releases?definitionId=%d&$top=%d&$expand=environments&queryOrder=descending&api-version=%s",
+		c.releaseProjectBaseURL(project), definitionID, top, c.apiVersion(),
 	)
 	var list releasesListResponse
 	if err := c.Get(url, &list); err != nil {
@@ -48,8 +48,8 @@ type releasesListResponse struct {
 // definition, or nil if no release has ever been created.
 func (c Config) GetLatestRelease(project string, definitionID int) (*Release, error) {
 	listURL := fmt.Sprintf(
-		"%s/%s/%s/_apis/release/releases?definitionId=%d&$top=1&queryOrder=descending&api-version=6.0",
-		c.OrgURL, Collection, project, definitionID,
+		"%s/_apis/release/releases?definitionId=%d&$top=1&queryOrder=descending&api-version=%s",
+		c.releaseProjectBaseURL(project), definitionID, c.apiVersion(),
 	)
 	var list releasesListResponse
 	if err := c.Get(listURL, &list); err != nil {
@@ -59,7 +59,7 @@ func (c Config) GetLatestRelease(project string, definitionID int) (*Release, er
 		return nil, nil
 	}
 
-	detailURL := fmt.Sprintf("%s/%s/%s/_apis/release/releases/%d?api-version=6.0", c.OrgURL, Collection, project, list.Value[0].ID)
+	detailURL := fmt.Sprintf("%s/_apis/release/releases/%d?api-version=%s", c.releaseProjectBaseURL(project), list.Value[0].ID, c.apiVersion())
 	var detail Release
 	if err := c.Get(detailURL, &detail); err != nil {
 		return nil, err
