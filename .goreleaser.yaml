@@ -26,5 +26,43 @@ archives:
 checksum:
   name_template: checksums.txt
 
+nfpms:
+  - id: linux-packages
+    ids: [a22r]
+    package_name: a22r
+    file_name_template: "a22r_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    vendor: theomerkaratas
+    homepage: https://github.com/theomerkaratas/azure-devops-batch-operator
+    maintainer: Omer Karatas
+    description: Terminal application for inspecting and updating Azure DevOps classic release pipelines in bulk.
+    section: utils
+    priority: optional
+    bindir: /usr/bin
+    formats: [deb, rpm]
+    contents:
+      - src: config.example.yml
+        dst: /usr/share/doc/a22r/config.example.yml
+
+homebrew_casks:
+  - name: a22r
+    ids: [a22r]
+    binaries: [a22r]
+    homepage: https://github.com/theomerkaratas/azure-devops-batch-operator
+    description: Inspect and update Azure DevOps classic release pipelines in bulk
+    repository:
+      owner: theomerkaratas
+      name: homebrew-tap
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    commit_author:
+      name: goreleaserbot
+      email: actions@github.com
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/a22r"]
+          end
+
 changelog:
   sort: asc

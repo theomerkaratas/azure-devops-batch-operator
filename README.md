@@ -17,27 +17,77 @@ Run `a22r` without arguments to open the interactive UI, or use `a22r <command> 
 
 ### macOS and Linux
 
+Install with Homebrew:
+
+```sh
+brew install --cask theomerkaratas/tap/a22r
+```
+
+The first installation adds the `theomerkaratas/homebrew-tap` tap automatically. Subsequent updates are available through `brew upgrade a22r`.
+
+### Debian and Ubuntu
+
+Every release includes native `amd64` and `arm64` DEB packages. Set the release version and use the architecture reported by `dpkg`:
+
+```sh
+VERSION=1.0.0
+ARCH="$(dpkg --print-architecture)"
+curl -fLO "https://github.com/theomerkaratas/azure-devops-batch-operator/releases/download/v${VERSION}/a22r_${VERSION}_linux_${ARCH}.deb"
+sudo apt install "./a22r_${VERSION}_linux_${ARCH}.deb"
+```
+
+The same downloaded package can be installed with `apt-get`:
+
+```sh
+sudo apt-get install "./a22r_${VERSION}_linux_${ARCH}.deb"
+```
+
+### Fedora, RHEL, Rocky Linux, AlmaLinux, and Amazon Linux
+
+Every release also includes RPM packages. Select the architecture matching your machine (`amd64` or `arm64` in the asset name):
+
+```sh
+VERSION=1.0.0
+case "$(uname -m)" in
+  x86_64|amd64) ARCH=amd64 ;;
+  arm64|aarch64) ARCH=arm64 ;;
+  *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
+esac
+curl -fLO "https://github.com/theomerkaratas/azure-devops-batch-operator/releases/download/v${VERSION}/a22r_${VERSION}_linux_${ARCH}.rpm"
+sudo dnf install "./a22r_${VERSION}_linux_${ARCH}.rpm"
+```
+
+On systems that use `yum`:
+
+```sh
+sudo yum install "./a22r_${VERSION}_linux_${ARCH}.rpm"
+```
+
+### Install script
+
 Install the latest release with `curl`:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/omerkaratas/azure-devops-batch-operator/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/theomerkaratas/azure-devops-batch-operator/main/install.sh | sh
 ```
 
 Or with `wget`:
 
 ```sh
-wget -qO- https://raw.githubusercontent.com/omerkaratas/azure-devops-batch-operator/main/install.sh | sh
+wget -qO- https://raw.githubusercontent.com/theomerkaratas/azure-devops-batch-operator/main/install.sh | sh
 ```
 
 Install a specific version:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/omerkaratas/azure-devops-batch-operator/main/install.sh | sh -s -- v1.0.0
+curl -fsSL https://raw.githubusercontent.com/theomerkaratas/azure-devops-batch-operator/main/install.sh | sh -s -- v1.0.0
 ```
 
 The installer supports Linux and macOS on `amd64` and `arm64`. It verifies the archive against the published SHA-256 checksums and installs the binary into `/usr/local/bin` or `~/.local/bin`.
 
 Running the installer again updates the binary while preserving an existing configuration file.
+
+Package-manager artifacts and the Homebrew cask are published by the tagged-release workflow. Maintainer setup is documented in [docs/releasing.md](docs/releasing.md).
 
 ### Windows
 

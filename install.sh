@@ -7,7 +7,7 @@
 # The version defaults to the latest release. Overrides: VERSION=v1.2.3, INSTALL_DIR=/path, A22R_REPO=owner/repo.
 set -eu
 
-REPO="${A22R_REPO:-omerkaratas/azure-devops-batch-operator}"
+REPO="${A22R_REPO:-theomerkaratas/azure-devops-batch-operator}"
 BIN="a22r"
 VERSION="${1:-${VERSION:-latest}}"
 
