@@ -138,7 +138,7 @@ tokens:
 
 `deployment` defaults to `on-prem` for compatibility with configurations created before cloud support was added. `collection` is used only for `on-prem` deployments and defaults to `DefaultCollection`.
 
-Treat this file as a secret. Do not commit it or share its contents. The repository's [config.example.yml](config.example.yml) contains an empty template safe to copy.
+Treat this file as a secret. Do not commit it or share its contents. The repository's [config.example.yml](config.example.yml) (cloud) and [config.onprem.example.yml](config.onprem.example.yml) (on-prem) contain empty templates safe to copy.
 
 ### Configuration precedence
 
