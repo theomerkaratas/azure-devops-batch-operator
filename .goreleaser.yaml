@@ -19,6 +19,7 @@ archives:
     name_template: "a22r_{{ .Os }}_{{ .Arch }}"
     files:
       - config.example.yml
+      - config.onprem.example.yml
     format_overrides:
       - goos: windows
         formats: [zip]
@@ -42,6 +43,8 @@ nfpms:
     contents:
       - src: config.example.yml
         dst: /usr/share/doc/a22r/config.example.yml
+      - src: config.onprem.example.yml
+        dst: /usr/share/doc/a22r/config.onprem.example.yml
 
 homebrew_casks:
   - name: a22r
@@ -62,6 +65,14 @@ homebrew_casks:
         install: |
           if OS.mac?
             system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/a22r"]
+            config_dir = Pathname.new(Dir.home)/"Library/Application Support/a22r"
+            config_file = config_dir/"config.yml"
+            example_file = staged_path/"config.example.yml"
+            if !config_file.exist? && example_file.exist?
+              config_dir.mkpath
+              FileUtils.cp(example_file, config_file)
+              File.chmod(0600, config_file)
+            end
           end
 
 changelog:
