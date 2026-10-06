@@ -44,6 +44,8 @@ func saveOutput(id, text string) (string, error) {
 }
 func (m model) backToMenu() model {
 	m.state = stateMenu
+	m.menuPath = nil
+	m.menuIdx = 0
 	m.fields = nil
 	m.activeSpec = nil
 	m.formErr = ""
@@ -130,6 +132,8 @@ func (m model) updateHistory(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch keyMsg.String() {
 	case "esc", "q", "m":
 		m.state = stateMenu
+		m.menuPath = nil
+		m.menuIdx = 0
 	case "up", "k":
 		if n > 0 {
 			m.histIdx = (m.histIdx - 1 + n) % n

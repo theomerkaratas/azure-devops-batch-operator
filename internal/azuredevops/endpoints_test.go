@@ -59,3 +59,24 @@ func TestOnPremOperationsIncludeCollection(t *testing.T) {
 		t.Fatalf("request URL = %q, want %q", requestURL, want)
 	}
 }
+
+func TestDeleteDefinitionUsesReleaseEndpoint(t *testing.T) {
+	cfg := Config{
+		Deployment: DeploymentCloud,
+		OrgURL:     "https://dev.azure.com/example",
+		ReleaseURL: "https://vsrm.dev.azure.com/example",
+	}
+	var requestURL string
+	stubHTTPClient(t, func(r *http.Request) (*http.Response, error) {
+		requestURL = r.URL.String()
+		return response(http.StatusNoContent, ""), nil
+	})
+
+	if err := cfg.DeleteDefinition("My Project", 42, "cleanup old pipeline", true); err != nil {
+		t.Fatal(err)
+	}
+	want := "https://vsrm.dev.azure.com/example/My%20Project/_apis/release/definitions/42?api-version=7.1&comment=cleanup+old+pipeline&forceDelete=true"
+	if requestURL != want {
+		t.Fatalf("request URL = %q, want %q", requestURL, want)
+	}
+}

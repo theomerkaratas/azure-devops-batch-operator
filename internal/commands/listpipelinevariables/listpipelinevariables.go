@@ -1,6 +1,6 @@
-// Command show-pipeline-variables shows the pipeline-level and stage-level variables of an
+// Command list-pipeline-variables lists the pipeline-level and stage-level variables of an
 // Azure DevOps release pipeline.
-package showpipelinevariables
+package listpipelinevariables
 
 import (
 	"flag"
@@ -15,22 +15,22 @@ import (
 
 const usageEpilog = `
 Example:
-  show-pipeline-variables 'Example.Project\PREP\CONFIG\PREPAPP\Example.API' --level read
+  list-pipeline-variables 'Example.Project\PREP\CONFIG\PREPAPP\Example.API' --level read
 Arguments:
   pipeline_path  Required. Full pipeline path in 'Project\Folder\SubFolder\PipelineName' format.
   --level        Optional. The PAT authorization level to use (default: read).
                  Choices: read | read-write | manage
-                 Secret variable values are never returned by Azure DevOps and are shown as ***.
+                 Secret variable values are never returned by Azure DevOps and are listed as ***.
 `
 
 // Main runs the command using os.Args.
 func Main() {
-	fs := flag.NewFlagSet("show-pipeline-variables", flag.ExitOnError)
+	fs := flag.NewFlagSet("list-pipeline-variables", flag.ExitOnError)
 	level := fs.String("level", azuredevops.DefaultLevel("read"), fmt.Sprintf("PAT authorization level to use: %s (default: config default_token or read)", strings.Join(azuredevops.Levels(), ", ")))
 	fs.Usage = func() {
-		fmt.Fprintln(os.Stderr, "Shows the pipeline-level and stage-level variables of a release pipeline.")
+		fmt.Fprintln(os.Stderr, "Lists the pipeline-level and stage-level variables of a release pipeline.")
 		fmt.Fprintln(os.Stderr)
-		fmt.Fprintln(os.Stderr, "Usage: show-pipeline-variables <pipeline_path> [--level read|read-write|manage]")
+		fmt.Fprintln(os.Stderr, "Usage: list-pipeline-variables <pipeline_path> [--level read|read-write|manage]")
 		fmt.Fprintln(os.Stderr)
 		fs.PrintDefaults()
 		fmt.Fprint(os.Stderr, usageEpilog)

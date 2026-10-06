@@ -67,3 +67,16 @@ func TestGetIncludesHTTPFailureDetails(t *testing.T) {
 		t.Fatalf("Get() error = %v, want HTTP status and response details", err)
 	}
 }
+
+func TestDeleteUsesDeleteMethod(t *testing.T) {
+	stubHTTPClient(t, func(r *http.Request) (*http.Response, error) {
+		if r.Method != http.MethodDelete {
+			t.Errorf("method = %q, want DELETE", r.Method)
+		}
+		return response(http.StatusNoContent, ""), nil
+	})
+
+	if err := (Config{PAT: "secret"}).Delete("https://example.test/item"); err != nil {
+		t.Fatal(err)
+	}
+}

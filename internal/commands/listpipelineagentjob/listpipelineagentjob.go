@@ -1,6 +1,6 @@
-// Command show-pipeline-agent-job shows the agent job settings (pool, demands, timeout, etc.)
+// Command list-pipeline-agent-job lists the agent job settings (pool, demands, timeout, etc.)
 // of an Azure DevOps release pipeline.
-package showpipelineagentjob
+package listpipelineagentjob
 
 import (
 	"flag"
@@ -14,7 +14,7 @@ import (
 
 const usageEpilog = `
 Example:
-  show-pipeline-agent-job 'Example.Project\PREP\CONFIG\PREPAPP\Example.API' --level read
+  list-pipeline-agent-job 'Example.Project\PREP\CONFIG\PREPAPP\Example.API' --level read
 Arguments:
   pipeline_path  Required. Full pipeline path in 'Project\Folder\SubFolder\PipelineName' format.
                  E.g.: Example.Project\PREP\CONFIG\PREPAPP\Example.API
@@ -28,12 +28,12 @@ Arguments:
 
 // Main runs the command using os.Args.
 func Main() {
-	fs := flag.NewFlagSet("show-pipeline-agent-job", flag.ExitOnError)
+	fs := flag.NewFlagSet("list-pipeline-agent-job", flag.ExitOnError)
 	level := fs.String("level", azuredevops.DefaultLevel("read"), fmt.Sprintf("PAT authorization level to use: %s (default: config default_token or read)", strings.Join(azuredevops.Levels(), ", ")))
 	fs.Usage = func() {
-		fmt.Fprintln(os.Stderr, "Shows the agent job settings (pool, demands, timeout, etc.) of a release pipeline.")
+		fmt.Fprintln(os.Stderr, "Lists the agent job settings (pool, demands, timeout, etc.) of a release pipeline.")
 		fmt.Fprintln(os.Stderr)
-		fmt.Fprintln(os.Stderr, "Usage: show-pipeline-agent-job <pipeline_path> [--level read|read-write|manage]")
+		fmt.Fprintln(os.Stderr, "Usage: list-pipeline-agent-job <pipeline_path> [--level read|read-write|manage]")
 		fmt.Fprintln(os.Stderr)
 		fs.PrintDefaults()
 		fmt.Fprint(os.Stderr, usageEpilog)

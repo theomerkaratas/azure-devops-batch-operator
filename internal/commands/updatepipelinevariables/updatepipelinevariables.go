@@ -128,9 +128,9 @@ func applyVariables(owner map[string]interface{}, label string, sets []assignmen
 	var lines []string
 	for _, a := range sets {
 		cur, exists := vars[a.name].(map[string]interface{})
-		shown := a.value
+		displayed := a.value
 		if secret {
-			shown = "***"
+			displayed = "***"
 		}
 		switch {
 		case !exists:
@@ -139,7 +139,7 @@ func applyVariables(owner map[string]interface{}, label string, sets []assignmen
 				owner["variables"] = vars
 			}
 			vars[a.name] = map[string]interface{}{"value": a.value, "isSecret": secret}
-			lines = append(lines, fmt.Sprintf("[%s] + %s = %s", label, a.name, shown))
+			lines = append(lines, fmt.Sprintf("[%s] + %s = %s", label, a.name, displayed))
 		default:
 			wasSecret, _ := cur["isSecret"].(bool)
 			oldValue, _ := cur["value"].(string)
@@ -152,7 +152,7 @@ func applyVariables(owner map[string]interface{}, label string, sets []assignmen
 			if secret {
 				cur["isSecret"] = true
 			}
-			lines = append(lines, fmt.Sprintf("[%s] ~ %s: %s -> %s", label, a.name, old, shown))
+			lines = append(lines, fmt.Sprintf("[%s] ~ %s: %s -> %s", label, a.name, old, displayed))
 		}
 	}
 	for _, name := range removes {

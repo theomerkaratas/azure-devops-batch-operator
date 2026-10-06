@@ -1,6 +1,6 @@
-// Command show-release-status lists the succeeded/failed status of the latest run of each
+// Command list-release-status lists the succeeded/failed status of the latest run of each
 // Azure DevOps release pipeline under a given path.
-package showreleasestatus
+package listreleasestatus
 
 import (
 	"flag"
@@ -15,8 +15,8 @@ import (
 
 const usageEpilog = `
 Examples:
-  show-release-status 'Example.Project\TEST' --level read
-  show-release-status 'Example.Project\TEST\CONFIG\TESTAPP\Inspector' --level read
+  list-release-status 'Example.Project\TEST' --level read
+  list-release-status 'Example.Project\TEST\CONFIG\TESTAPP\Inspector' --level read
 
 Arguments:
   target   Required. A target path: either a folder (covers all pipelines under it) or the
@@ -130,12 +130,12 @@ type statusRow struct {
 
 // Main runs the command using os.Args.
 func Main() {
-	fs := flag.NewFlagSet("show-release-status", flag.ExitOnError)
+	fs := flag.NewFlagSet("list-release-status", flag.ExitOnError)
 	level := fs.String("level", azuredevops.DefaultLevel("read"), fmt.Sprintf("PAT authorization level to use: %s (default: config default_token or read)", strings.Join(azuredevops.Levels(), ", ")))
 	fs.Usage = func() {
 		fmt.Fprintln(os.Stderr, "Lists the succeeded/failed status of the latest run of each release pipeline under a path.")
 		fmt.Fprintln(os.Stderr)
-		fmt.Fprintln(os.Stderr, "Usage: show-release-status <target> [--level read|read-write|manage]")
+		fmt.Fprintln(os.Stderr, "Usage: list-release-status <target> [--level read|read-write|manage]")
 		fmt.Fprintln(os.Stderr)
 		fs.PrintDefaults()
 		fmt.Fprint(os.Stderr, usageEpilog)

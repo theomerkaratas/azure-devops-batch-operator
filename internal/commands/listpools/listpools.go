@@ -69,8 +69,8 @@ func run(filter string, allMembers bool, level string) error {
 		fmt.Printf("No pools found matching '%s'.\n", filter)
 		return nil
 	}
-	showMembers := allMembers || filter != ""
-	if !showMembers {
+	listMembers := allMembers || filter != ""
+	if !listMembers {
 		for _, p := range matched {
 			fmt.Printf("%-40s id=%-5d agents=%d hosted=%v\n", p.Name, p.ID, p.Size, p.IsHosted)
 		}
