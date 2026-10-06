@@ -2,6 +2,7 @@ package azuredevops
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 )
 
@@ -87,6 +88,22 @@ func (c Config) CreateFolder(project, path string) error {
 		return nil
 	}
 	return err
+}
+
+// DeleteDefinition permanently deletes a classic release pipeline definition.
+func (c Config) DeleteDefinition(project string, definitionID int, comment string, force bool) error {
+	query := url.Values{"api-version": {c.apiVersion()}}
+	if comment != "" {
+		query.Set("comment", comment)
+	}
+	if force {
+		query.Set("forceDelete", "true")
+	}
+	endpoint := fmt.Sprintf(
+		"%s/_apis/release/definitions/%d?%s",
+		c.releaseProjectBaseURL(project), definitionID, query.Encode(),
+	)
+	return c.Delete(endpoint)
 }
 
 // CancelReleaseEnvironment cancels a queued or in-progress stage deployment.

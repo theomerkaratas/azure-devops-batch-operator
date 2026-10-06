@@ -196,6 +196,7 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `clone-pipeline`
 - `compare-pipelines`
 - `create-files`
+- `delete-pipelines`
 - `list-pools`
 - `list-releases`
 - `rename-or-move-pipelines`

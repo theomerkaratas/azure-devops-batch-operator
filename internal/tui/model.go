@@ -29,10 +29,11 @@ type historyEntry struct {
 }
 
 type model struct {
-	state   appState
-	menuIdx int
-	width   int
-	height  int
+	state    appState
+	menuIdx  int
+	menuPath []int
+	width    int
+	height   int
 
 	filter    textinput.Model
 	filtering bool

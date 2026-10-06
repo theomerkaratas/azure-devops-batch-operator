@@ -116,6 +116,36 @@ func init() { commandSpecs = append(commandSpecs, writeCommandSpecs...) }
 
 var writeCommandSpecs = []commandSpec{
 	{
+		id:          "delete-pipelines",
+		description: "Permanently deletes matching classic release pipelines.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST\ARCHIVE`, true),
+				textField("filter", "Name filter (optional)", "text in pipeline name", false),
+				textField("comment", "Audit comment", "Deleted by azure-devops-batch-operator", false),
+				boolField("force", "Force (cancel active deployments)", false),
+				choiceField("level", "PAT level", []string{"manage"}, 0),
+				boolField("dry_run", "Dry run (preview only)", true),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"], "--level", v["level"]}
+			if v["filter"] != "" {
+				args = append(args, "--filter", v["filter"])
+			}
+			if v["comment"] != "" {
+				args = append(args, "--comment", v["comment"])
+			}
+			if v["force"] == "yes" {
+				args = append(args, "--force")
+			}
+			if v["dry_run"] == "yes" {
+				return append(args, "--dry-run"), nil
+			}
+			return append(args, "--yes"), nil
+		},
+	},
+	{
 		id:          "list-pools",
 		description: "Lists agent pools, or the agents (members) of matching pools.",
 		newFields: func() []*field {

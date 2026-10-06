@@ -7,7 +7,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// banner is the "AZURE DEVOPS BATCH OPERATOR" ASCII art title shown at the top of the menu screen.
 const banner = `
     _      _____ _   _ ____  _____   ____  _______     _____  ____  ____  
    / \    |__  /| | | |  _ \| ____| |  _ \| ____\ \   / / _ \|  _ \/ ___| 
@@ -22,15 +21,79 @@ const banner = `
 |____/_/   \_\_| \____|_| |_|  \___/|_|   |_____|_| \_\/_/   \_\_| \___/|_| \_\
 `
 
-// menuChrome is the number of rows used by everything on the menu screen except the command list.
-const menuChrome = 17
+const menuChrome = 18
 
-// visible returns the indexes into commandSpecs that match the filter text.
+type menuNode struct {
+	label       string
+	description string
+	commandID   string
+	children    []menuNode
+}
+
+var menuTree = []menuNode{
+	{label: "Create", description: "Create pipelines, releases, or local files.", children: []menuNode{
+		{label: "Clone pipeline", description: "Copy an existing release pipeline.", commandID: "clone-pipeline"},
+		{label: "Trigger release", description: "Create releases for matching pipelines.", commandID: "trigger-release"},
+		{label: "Create files", description: "Create empty local files and folders.", commandID: "create-files"},
+	}},
+	{label: "Read", description: "Inspect and compare Azure DevOps resources.", children: []menuNode{
+		{label: "List", description: "List pipelines, releases, and agent pools.", children: []menuNode{
+			{label: "Release pipelines", description: "List pipeline folders and definitions.", commandID: "list-releases"},
+			{label: "Agent pools", description: "List pools and their agents.", commandID: "list-pools"},
+		}},
+		{label: "Show", description: "Show details for pipelines and releases.", children: []menuNode{
+			{label: "Pipeline variables", description: "Show pipeline and stage variables.", commandID: "show-pipeline-variables"},
+			{label: "Pipeline steps", description: "Show stages, tasks, and scripts.", commandID: "show-pipeline-steps"},
+			{label: "Pipeline schedule", description: "Show scheduled triggers.", commandID: "show-pipeline-schedule"},
+			{label: "Pipeline agent job", description: "Show pool, demands, and timeouts.", commandID: "show-pipeline-agent-job"},
+			{label: "Release history", description: "Show recent releases and stage statuses.", commandID: "show-release-history"},
+			{label: "Release status", description: "Show latest status across pipelines.", commandID: "show-release-status"},
+		}},
+		{label: "Compare pipelines", description: "Compare variables, jobs, and tasks.", commandID: "compare-pipelines"},
+	}},
+	{label: "Update", description: "Modify pipeline configuration and organization.", children: []menuNode{
+		{label: "Pipeline variables", description: "Set or remove variables.", commandID: "update-pipeline-variables"},
+		{label: "Pipeline schedule", description: "Set or pause scheduled triggers.", commandID: "update-pipeline-schedule"},
+		{label: "Pipeline agent job", description: "Update pool and timeout settings.", commandID: "update-pipeline-agent-job"},
+		{label: "Pipeline demands", description: "Set, add, remove, or clear demands.", commandID: "update-pipeline-demands"},
+		{label: "Rename or move pipelines", description: "Rename pipelines or move them between folders.", commandID: "rename-or-move-pipelines"},
+	}},
+	{label: "Delete", description: "Delete pipelines or cancel active releases.", children: []menuNode{
+		{label: "Delete pipelines", description: "Permanently delete matching release pipelines.", commandID: "delete-pipelines"},
+		{label: "Cancel releases", description: "Cancel deployments and optionally abandon releases.", commandID: "cancel-releases"},
+	}},
+}
+
+func (m model) currentMenu() []menuNode {
+	nodes := menuTree
+	for _, i := range m.menuPath {
+		if i < 0 || i >= len(nodes) {
+			return menuTree
+		}
+		nodes = nodes[i].children
+	}
+	return nodes
+}
+
+func (m model) breadcrumbs() string {
+	nodes := menuTree
+	parts := []string{"Home"}
+	for _, i := range m.menuPath {
+		if i < 0 || i >= len(nodes) {
+			break
+		}
+		parts = append(parts, nodes[i].label)
+		nodes = nodes[i].children
+	}
+	return strings.Join(parts, " / ")
+}
+
 func (m model) visible() []int {
 	q := strings.ToLower(strings.TrimSpace(m.filter.Value()))
-	var idx []int
-	for i, s := range commandSpecs {
-		if q == "" || strings.Contains(strings.ToLower(s.id+" "+s.description), q) {
+	nodes := m.currentMenu()
+	idx := make([]int, 0, len(nodes))
+	for i, node := range nodes {
+		if q == "" || strings.Contains(strings.ToLower(node.label+" "+node.description), q) {
 			idx = append(idx, i)
 		}
 	}
@@ -39,26 +102,45 @@ func (m model) visible() []int {
 
 func (m *model) moveMenu(delta int) {
 	n := len(m.visible())
-	if n == 0 {
-		return
+	if n > 0 {
+		m.menuIdx = (m.menuIdx + delta + n) % n
 	}
-	m.menuIdx = (m.menuIdx + delta + n) % n
 }
 
-// openSelected opens the form for the highlighted command, pre-filled with its last inputs.
+func findCommandSpec(id string) *commandSpec {
+	for i := range commandSpecs {
+		if commandSpecs[i].id == id {
+			return &commandSpecs[i]
+		}
+	}
+	return nil
+}
+
 func (m model) openSelected() (tea.Model, tea.Cmd) {
 	vis := m.visible()
 	if m.menuIdx >= len(vis) {
 		return m, nil
 	}
+	selected := vis[m.menuIdx]
+	node := m.currentMenu()[selected]
+	if len(node.children) > 0 {
+		m.menuPath = append(m.menuPath, selected)
+		m.menuIdx = 0
+		m.filtering = false
+		m.filter.SetValue("")
+		m.filter.Blur()
+		return m, nil
+	}
 
-	spec := &commandSpecs[vis[m.menuIdx]]
+	spec := findCommandSpec(node.commandID)
+	if spec == nil {
+		return m, nil
+	}
 	m.activeSpec = spec
 	m.fields = spec.newFields()
 	for _, f := range m.fields {
 		f.pick = pickModes[f.key]
 	}
-
 	m.inputs.apply(spec.id, m.fields)
 	m.focusIdx = 0
 	m.formErr = ""
@@ -71,6 +153,17 @@ func (m model) openSelected() (tea.Model, tea.Cmd) {
 		cmds = append(cmds, loadHelp(spec))
 	}
 	return m, tea.Batch(cmds...)
+}
+
+func (m model) backMenu() model {
+	if len(m.menuPath) > 0 {
+		m.menuPath = m.menuPath[:len(m.menuPath)-1]
+	}
+	m.menuIdx = 0
+	m.filtering = false
+	m.filter.SetValue("")
+	m.filter.Blur()
+	return m
 }
 
 func (m model) updateMenu(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -109,16 +202,20 @@ func (m model) updateMenu(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch key {
 	case "q":
 		return m, tea.Quit
+	case "esc", "backspace", "left":
+		if len(m.menuPath) > 0 {
+			m = m.backMenu()
+		}
+	case "h":
+		m.state = stateHistory
 	case "/":
 		m.filtering = true
 		return m, m.filter.Focus()
-	case "h":
-		m.state = stateHistory
 	case "up", "k":
 		m.moveMenu(-1)
 	case "down", "j":
 		m.moveMenu(1)
-	case "enter":
+	case "enter", "right", "l":
 		return m.openSelected()
 	}
 	return m, nil
@@ -128,22 +225,21 @@ func (m model) viewMenu() string {
 	var b strings.Builder
 	b.WriteString(bannerStyle.Render(banner))
 	b.WriteString("\n")
-	b.WriteString(descStyle.Render("Release pipeline toolkit"))
+	b.WriteString(descStyle.Render("Release pipeline toolkit  •  " + m.breadcrumbs()))
 	b.WriteString("\n")
 	if m.filtering {
 		b.WriteString(m.filter.View())
 	}
 	b.WriteString("\n")
 
+	nodes := m.currentMenu()
 	vis := m.visible()
-	maxID := 0
+	maxLabel := 0
 	for _, i := range vis {
-		if n := len(commandSpecs[i].id); n > maxID {
-			maxID = n
+		if n := len(nodes[i].label); n > maxLabel {
+			maxLabel = n
 		}
 	}
-
-	// Show a window of the list that keeps the selection visible on short terminals.
 	start, end := 0, len(vis)
 	if rows := m.height - menuChrome; m.height > 0 && rows >= 3 && rows < len(vis) {
 		start = m.menuIdx - rows/2
@@ -155,14 +251,16 @@ func (m model) viewMenu() string {
 		}
 		end = start + rows
 	}
-
 	if len(vis) == 0 {
-		b.WriteString(descStyle.Render("  no commands match the filter"))
-		b.WriteString("\n")
+		b.WriteString(descStyle.Render("  no actions match the filter") + "\n")
 	}
 	for pos := start; pos < end; pos++ {
-		spec := commandSpecs[vis[pos]]
-		line := truncate(fmt.Sprintf("%-*s  %s", maxID, spec.id, spec.description), m.width-4)
+		node := nodes[vis[pos]]
+		label := node.label
+		if len(node.children) > 0 {
+			label += "  ›"
+		}
+		line := truncate(fmt.Sprintf("%-*s  %s", maxLabel+3, label, node.description), m.width-4)
 		if pos == m.menuIdx {
 			b.WriteString(selCell.Render("▸ " + line))
 		} else {
@@ -175,7 +273,11 @@ func (m model) viewMenu() string {
 	if m.filtering {
 		b.WriteString(helpStyle.Render("type to filter • ↑/↓: move • enter: select • esc: clear filter"))
 	} else {
-		b.WriteString(helpStyle.Render(fmt.Sprintf("↑/↓ or j/k: move • enter: select • /: filter • h: history (%d) • q/ctrl+c: quit", len(m.history))))
+		back := ""
+		if len(m.menuPath) > 0 {
+			back = " • esc/←: back"
+		}
+		b.WriteString(helpStyle.Render(fmt.Sprintf("↑/↓ or j/k: move • enter/→: select%s • /: filter • h: history (%d) • q: quit", back, len(m.history))))
 	}
 	return b.String()
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/clonepipeline"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/comparepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/createfiles"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/deletepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpools"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listreleases"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/renameormovepipelines"
@@ -41,6 +42,7 @@ var commands = map[string]func(){
 	"clone-pipeline":            clonepipeline.Main,
 	"compare-pipelines":         comparepipelines.Main,
 	"create-files":              createfiles.Main,
+	"delete-pipelines":          deletepipelines.Main,
 	"list-pools":                listpools.Main,
 	"list-releases":             listreleases.Main,
 	"rename-or-move-pipelines":  renameormovepipelines.Main,

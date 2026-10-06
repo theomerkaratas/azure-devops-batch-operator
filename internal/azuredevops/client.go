@@ -55,6 +55,29 @@ func (c Config) Patch(url string, body interface{}, out interface{}) error {
 	return c.send(http.MethodPatch, url, body, out)
 }
 
+// Delete performs an authenticated DELETE request against the Azure DevOps API.
+func (c Config) Delete(url string) error {
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		return err
+	}
+	req.SetBasicAuth("", c.PAT)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = resp.Body.Close() }()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("request failed (HTTP %d): %s", resp.StatusCode, string(body))
+	}
+	return nil
+}
+
 func (c Config) send(method, url string, body interface{}, out interface{}) error {
 	payload, err := json.Marshal(body)
 	if err != nil {
