@@ -2,8 +2,8 @@ package tui
 
 import "testing"
 
-func TestMainMenuHasSixTopLevelCategories(t *testing.T) {
-	want := []string{"Create", "Clone", "Read", "Update", "Delete", "Cancel"}
+func TestMainMenuHasEightTopLevelCategories(t *testing.T) {
+	want := []string{"Create", "Clone", "Read", "Compare", "Update", "Delete", "Cancel", "Backup"}
 	if len(menuTree) != len(want) {
 		t.Fatalf("main menu has %d entries, want %d", len(menuTree), len(want))
 	}
@@ -16,7 +16,7 @@ func TestMainMenuHasSixTopLevelCategories(t *testing.T) {
 
 func TestReadMenuGroupsDetailCommandsUnderList(t *testing.T) {
 	readMenu := menuTree[2].children
-	want := []string{"List", "Compare pipelines"}
+	want := []string{"List"}
 	if len(readMenu) != len(want) {
 		t.Fatalf("read menu has %d entries, want %d", len(readMenu), len(want))
 	}
@@ -27,6 +27,19 @@ func TestReadMenuGroupsDetailCommandsUnderList(t *testing.T) {
 	}
 	if got := len(readMenu[0].children); got != 9 {
 		t.Errorf("List submenu has %d entries, want 9", got)
+	}
+}
+
+func TestCompareMenuGroupsBothCompareCommands(t *testing.T) {
+	compareMenu := menuTree[3].children
+	want := []string{"Compare pipelines", "Compare folders"}
+	if len(compareMenu) != len(want) {
+		t.Fatalf("compare menu has %d entries, want %d", len(compareMenu), len(want))
+	}
+	for i, label := range want {
+		if compareMenu[i].label != label {
+			t.Errorf("compare menu entry %d = %q, want %q", i, compareMenu[i].label, label)
+		}
 	}
 }
 

@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"sync"
 
@@ -228,4 +229,74 @@ func EachDeploymentInput(raw map[string]interface{}, stage string, fn func(stage
 func Int(m map[string]interface{}, key string) int {
 	f, _ := m[key].(float64)
 	return int(f)
+}
+
+// FlattenDetail turns a release definition's variables, stages, jobs and tasks into a flat
+// key -> value map, so two definitions can be diffed generically. Shared by compare-pipelines
+// and compare-folders.
+func FlattenDetail(cfg azuredevops.Config, project string, detail azuredevops.DefinitionDetail) map[string]string {
+	out := map[string]string{}
+	addVars := func(prefix string, vars map[string]azuredevops.ConfigVariable) {
+		for n, v := range vars {
+			if v.IsSecret {
+				out[prefix+"variable "+n] = "(secret)"
+			} else {
+				out[prefix+"variable "+n] = v.Value
+			}
+		}
+	}
+	addVars("", detail.Variables)
+	for _, env := range detail.Environments {
+		sp := "stage " + env.Name + ": "
+		out[sp+"exists"] = "yes"
+		addVars(sp, env.Variables)
+		for _, phase := range env.DeployPhases {
+			jp := sp + "job " + phase.Name + ": "
+			if di := phase.DeploymentInput; di != nil {
+				out[jp+"agent pool"] = cfg.ResolvePoolName(project, di.QueueID)
+				out[jp+"demands"] = strings.Join(di.Demands, "; ")
+				out[jp+"timeout (min)"] = fmt.Sprint(di.TimeoutInMinutes)
+				out[jp+"condition"] = di.Condition
+			}
+			for i, t := range phase.WorkflowTasks {
+				out[fmt.Sprintf("%stask %02d", jp, i+1)] = fmt.Sprintf("%s (enabled=%v)", t.Name, t.Enabled)
+			}
+		}
+	}
+	return out
+}
+
+// DiffFlat prints the differences between two flattened definitions (as produced by
+// FlattenDetail), prefixed "- only in A", "+ only in B" or "~ differs". It returns the number
+// of differences found.
+func DiffFlat(labelA, labelB string, a, b map[string]string) int {
+	keys := map[string]bool{}
+	for k := range a {
+		keys[k] = true
+	}
+	for k := range b {
+		keys[k] = true
+	}
+	sorted := make([]string, 0, len(keys))
+	for k := range keys {
+		sorted = append(sorted, k)
+	}
+	sort.Strings(sorted)
+	diffs := 0
+	for _, k := range sorted {
+		va, inA := a[k]
+		vb, inB := b[k]
+		switch {
+		case inA && !inB:
+			fmt.Printf("- only in %s  %s = %s\n", labelA, k, va)
+		case !inA && inB:
+			fmt.Printf("+ only in %s  %s = %s\n", labelB, k, vb)
+		case va != vb:
+			fmt.Printf("~ differs    %s\n    %s: %s\n    %s: %s\n", k, labelA, va, labelB, vb)
+		default:
+			continue
+		}
+		diffs++
+	}
+	return diffs
 }

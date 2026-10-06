@@ -49,7 +49,10 @@ var menuTree = []menuNode{
 			{label: "Release history", description: "List recent releases and stage statuses.", commandID: "list-release-history"},
 			{label: "Release status", description: "List latest status across pipelines.", commandID: "list-release-status"},
 		}},
-		{label: "Compare pipelines", description: "Compare variables, jobs, and tasks.", commandID: "compare-pipelines"},
+	}},
+	{label: "Compare", description: "Compare pipelines or whole folders.", children: []menuNode{
+		{label: "Compare pipelines", description: "Compare variables, jobs, and tasks between two pipelines.", commandID: "compare-pipelines"},
+		{label: "Compare folders", description: "Compare release counts, names, and content between two folders.", commandID: "compare-folders"},
 	}},
 	{label: "Update", description: "Modify pipeline configuration and organization.", children: []menuNode{
 		{label: "Pipeline variables", description: "Set or remove variables.", commandID: "update-pipeline-variables"},
@@ -60,6 +63,10 @@ var menuTree = []menuNode{
 	}},
 	{label: "Delete", description: "Permanently delete matching release pipelines.", commandID: "delete-pipelines"},
 	{label: "Cancel", description: "Cancel deployments and optionally abandon releases.", commandID: "cancel-releases"},
+	{label: "Backup", description: "Back up or restore release pipeline definitions.", children: []menuNode{
+		{label: "Back up pipelines", description: "Save matching pipelines' definitions to local JSON files.", commandID: "backup-pipelines"},
+		{label: "Restore pipelines", description: "Recreate or overwrite pipelines from backup JSON files.", commandID: "restore-pipelines"},
+	}},
 }
 
 func (m model) currentMenu() []menuNode {
