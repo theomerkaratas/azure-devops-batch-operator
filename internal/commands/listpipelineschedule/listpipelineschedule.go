@@ -1,5 +1,5 @@
-// Command show-pipeline-schedule shows the scheduled triggers for an Azure DevOps release pipeline.
-package showpipelineschedule
+// Command list-pipeline-schedule lists the scheduled triggers for an Azure DevOps release pipeline.
+package listpipelineschedule
 
 import (
 	"encoding/json"
@@ -14,7 +14,7 @@ import (
 
 const usageEpilog = `
 Example:
-  show-pipeline-schedule 'Example.Project\PREP\CONFIG\PREPAPP\Example.API' --level read
+  list-pipeline-schedule 'Example.Project\PREP\CONFIG\PREPAPP\Example.API' --level read
 Arguments:
   pipeline_path  Required. Full pipeline path in 'Project\Folder\SubFolder\PipelineName' format.
                  E.g.: Example.Project\PREP\CONFIG\PREPAPP\Example.API
@@ -55,12 +55,12 @@ func decodeDays(value azuredevops.IntOrString) string {
 
 // Main runs the command using os.Args.
 func Main() {
-	fs := flag.NewFlagSet("show-pipeline-schedule", flag.ExitOnError)
+	fs := flag.NewFlagSet("list-pipeline-schedule", flag.ExitOnError)
 	level := fs.String("level", azuredevops.DefaultLevel("read"), fmt.Sprintf("PAT authorization level to use: %s (default: config default_token or read)", strings.Join(azuredevops.Levels(), ", ")))
 	fs.Usage = func() {
-		fmt.Fprintln(os.Stderr, "Shows the scheduled triggers for an Azure DevOps release pipeline.")
+		fmt.Fprintln(os.Stderr, "Lists the scheduled triggers for an Azure DevOps release pipeline.")
 		fmt.Fprintln(os.Stderr)
-		fmt.Fprintln(os.Stderr, "Usage: show-pipeline-schedule <pipeline_path> [--level read|read-write|manage]")
+		fmt.Fprintln(os.Stderr, "Usage: list-pipeline-schedule <pipeline_path> [--level read|read-write|manage]")
 		fmt.Fprintln(os.Stderr)
 		fs.PrintDefaults()
 		fmt.Fprint(os.Stderr, usageEpilog)

@@ -1,5 +1,5 @@
-// Command show-pipeline-steps shows the stages/tasks and script contents of an Azure DevOps release pipeline.
-package showpipelinesteps
+// Command list-pipeline-steps lists the stages/tasks and script contents of an Azure DevOps release pipeline.
+package listpipelinesteps
 
 import (
 	"flag"
@@ -14,7 +14,7 @@ import (
 
 const usageEpilog = `
 Example:
-  show-pipeline-steps 'Example.Project\PREP\CONFIG\PREPAPP\Example.API' --level read
+  list-pipeline-steps 'Example.Project\PREP\CONFIG\PREPAPP\Example.API' --level read
 Arguments:
   pipeline_path  Required. Full pipeline path in 'Project\Folder\SubFolder\PipelineName' format.
                  E.g.: Example.Project\PREP\CONFIG\PREPAPP\Example.API
@@ -99,12 +99,12 @@ func printTaskDetails(task azuredevops.WorkflowTask, indent string) {
 
 // Main runs the command using os.Args.
 func Main() {
-	fs := flag.NewFlagSet("show-pipeline-steps", flag.ExitOnError)
+	fs := flag.NewFlagSet("list-pipeline-steps", flag.ExitOnError)
 	level := fs.String("level", azuredevops.DefaultLevel("read"), fmt.Sprintf("PAT authorization level to use: %s (default: config default_token or read)", strings.Join(azuredevops.Levels(), ", ")))
 	fs.Usage = func() {
-		fmt.Fprintln(os.Stderr, "Shows the stages/tasks and script contents of an Azure DevOps release pipeline.")
+		fmt.Fprintln(os.Stderr, "Lists the stages/tasks and script contents of an Azure DevOps release pipeline.")
 		fmt.Fprintln(os.Stderr)
-		fmt.Fprintln(os.Stderr, "Usage: show-pipeline-steps <pipeline_path> [--level read|read-write|manage]")
+		fmt.Fprintln(os.Stderr, "Usage: list-pipeline-steps <pipeline_path> [--level read|read-write|manage]")
 		fmt.Fprintln(os.Stderr)
 		fs.PrintDefaults()
 		fmt.Fprint(os.Stderr, usageEpilog)

@@ -103,7 +103,7 @@ func parentFolder(folder string) (parent, leaf string) {
 	return folder[:i], leaf
 }
 
-// items lists what is shown at the current level: projects, or sub-folders then pipelines.
+// items lists what is displayed at the current level: projects, or sub-folders then pipelines.
 func (p *picker) items() []pickItem {
 	var out []pickItem
 	if p.project == "" {

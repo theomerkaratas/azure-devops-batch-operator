@@ -14,15 +14,16 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/comparepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/createfiles"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/deletepipelines"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelineagentjob"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelineschedule"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelinesteps"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelinevariables"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpoolmembers"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpools"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listreleasehistory"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listreleases"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listreleasestatus"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/renameormovepipelines"
-	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/showpipelineagentjob"
-	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/showpipelineschedule"
-	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/showpipelinesteps"
-	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/showpipelinevariables"
-	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/showreleasehistory"
-	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/showreleasestatus"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/triggerrelease"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineagentjob"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinedemands"
@@ -43,15 +44,16 @@ var commands = map[string]func(){
 	"compare-pipelines":         comparepipelines.Main,
 	"create-files":              createfiles.Main,
 	"delete-pipelines":          deletepipelines.Main,
+	"list-pool-members":         listpoolmembers.Main,
 	"list-pools":                listpools.Main,
 	"list-releases":             listreleases.Main,
 	"rename-or-move-pipelines":  renameormovepipelines.Main,
-	"show-pipeline-agent-job":   showpipelineagentjob.Main,
-	"show-pipeline-schedule":    showpipelineschedule.Main,
-	"show-pipeline-steps":       showpipelinesteps.Main,
-	"show-pipeline-variables":   showpipelinevariables.Main,
-	"show-release-history":      showreleasehistory.Main,
-	"show-release-status":       showreleasestatus.Main,
+	"list-pipeline-agent-job":   listpipelineagentjob.Main,
+	"list-pipeline-schedule":    listpipelineschedule.Main,
+	"list-pipeline-steps":       listpipelinesteps.Main,
+	"list-pipeline-variables":   listpipelinevariables.Main,
+	"list-release-history":      listreleasehistory.Main,
+	"list-release-status":       listreleasestatus.Main,
 	"trigger-release":           triggerrelease.Main,
 	"update-pipeline-agent-job": updatepipelineagentjob.Main,
 	"update-pipeline-demands":   updatepipelinedemands.Main,

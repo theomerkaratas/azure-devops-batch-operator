@@ -28,7 +28,7 @@ Arguments:
                 set    -> Updates existing schedules (or adds one if a pipeline has none).
                 remove -> Removes all schedule triggers. Azure DevOps has no "disabled" flag for
                           release schedules, so removal is the only way to pause them; use
-                          show-pipeline-schedule beforehand to record what you removed.
+                          list-pipeline-schedule beforehand to record what you removed.
 
   --time      With set: HH:MM start time (24h, in the schedule's time zone).
   --days      With set: comma-separated days (mon,tue,wed,thu,fri,sat,sun) or 'all' / 'weekdays'.

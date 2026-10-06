@@ -14,6 +14,22 @@ func TestMainMenuHasFourCRUDCategories(t *testing.T) {
 	}
 }
 
+func TestReadMenuGroupsDetailCommandsUnderList(t *testing.T) {
+	readMenu := menuTree[1].children
+	want := []string{"List", "Compare pipelines"}
+	if len(readMenu) != len(want) {
+		t.Fatalf("read menu has %d entries, want %d", len(readMenu), len(want))
+	}
+	for i, label := range want {
+		if readMenu[i].label != label {
+			t.Errorf("read menu entry %d = %q, want %q", i, readMenu[i].label, label)
+		}
+	}
+	if got := len(readMenu[0].children); got != 9 {
+		t.Errorf("List submenu has %d entries, want 9", got)
+	}
+}
+
 func TestMenuTreeContainsEveryCommandExactlyOnce(t *testing.T) {
 	seen := map[string]int{}
 	var walk func([]menuNode)

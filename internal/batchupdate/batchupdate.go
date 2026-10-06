@@ -64,7 +64,7 @@ type planItem struct {
 	lines []string
 }
 
-// Run selects the pipelines, applies mutate to each, shows the plan and (unless dry-run) saves.
+// Run selects the pipelines, applies mutate to each, prints the plan and (unless dry-run) saves.
 func Run(o Options, comment string, mutate Mutator) error {
 	cfg, err := azuredevops.LoadConfig(o.Level)
 	if err != nil {

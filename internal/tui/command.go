@@ -146,6 +146,23 @@ var writeCommandSpecs = []commandSpec{
 		},
 	},
 	{
+		id:          "list-pool-members",
+		description: "Lists the agents that belong to matching agent pools.",
+		newFields: func() []*field {
+			return []*field{
+				textField("pool", "Pool name (optional)", "empty = every pool; partial names are accepted", false),
+				choiceField("level", "PAT level", readLevels(), 0),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			var args []string
+			if v["pool"] != "" {
+				args = append(args, v["pool"])
+			}
+			return append(args, "--level", v["level"]), nil
+		},
+	},
+	{
 		id:          "list-pools",
 		description: "Lists agent pools, or the agents (members) of matching pools.",
 		newFields: func() []*field {
@@ -428,8 +445,8 @@ var commandSpecs = []commandSpec{
 		},
 	},
 	{
-		id:          "show-pipeline-agent-job",
-		description: "Shows the agent job settings (pool, demands, timeout, etc.) of a release pipeline.",
+		id:          "list-pipeline-agent-job",
+		description: "Lists the agent job settings (pool, demands, timeout, etc.) of a release pipeline.",
 		newFields: func() []*field {
 			return []*field{
 				textField("pipeline_path", "Pipeline path", `e.g. Example.Project\PREP\CONFIG\PREPAPP\Example.API`, true),
@@ -441,8 +458,8 @@ var commandSpecs = []commandSpec{
 		},
 	},
 	{
-		id:          "show-pipeline-schedule",
-		description: "Shows the scheduled triggers for a release pipeline.",
+		id:          "list-pipeline-schedule",
+		description: "Lists the scheduled triggers for a release pipeline.",
 		newFields: func() []*field {
 			return []*field{
 				textField("pipeline_path", "Pipeline path", `e.g. Example.Project\PREP\CONFIG\PREPAPP\Example.API`, true),
@@ -454,8 +471,8 @@ var commandSpecs = []commandSpec{
 		},
 	},
 	{
-		id:          "show-pipeline-steps",
-		description: "Shows the stages/tasks and script contents of a release pipeline.",
+		id:          "list-pipeline-steps",
+		description: "Lists the stages/tasks and script contents of a release pipeline.",
 		newFields: func() []*field {
 			return []*field{
 				textField("pipeline_path", "Pipeline path", `e.g. Example.Project\PREP\CONFIG\PREPAPP\Example.API`, true),
@@ -467,8 +484,8 @@ var commandSpecs = []commandSpec{
 		},
 	},
 	{
-		id:          "show-pipeline-variables",
-		description: "Shows the pipeline-level and stage-level variables of a release pipeline.",
+		id:          "list-pipeline-variables",
+		description: "Lists the pipeline-level and stage-level variables of a release pipeline.",
 		newFields: func() []*field {
 			return []*field{
 				textField("pipeline_path", "Pipeline path", `e.g. Example.Project\PREP\CONFIG\PREPAPP\Example.API`, true),
@@ -480,8 +497,8 @@ var commandSpecs = []commandSpec{
 		},
 	},
 	{
-		id:          "show-release-history",
-		description: "Shows the most recent releases of a pipeline with creator, date and stage statuses.",
+		id:          "list-release-history",
+		description: "Lists the most recent releases of a pipeline with creator, date and stage statuses.",
 		newFields: func() []*field {
 			return []*field{
 				textField("pipeline_path", "Pipeline path", `e.g. Example.Project\PREP\CONFIG\PREPAPP\Example.API`, true),
@@ -502,7 +519,7 @@ var commandSpecs = []commandSpec{
 		},
 	},
 	{
-		id:          "show-release-status",
+		id:          "list-release-status",
 		description: "Lists the succeeded/failed status of the latest run of each release pipeline under a path.",
 		newFields: func() []*field {
 			return []*field{

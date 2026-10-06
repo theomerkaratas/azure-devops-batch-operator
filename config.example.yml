@@ -1,4 +1,4 @@
-# Copy this file to the platform-specific location shown by `a22r config-path`.
+# Copy this file to the platform-specific location returned by `a22r config-path`.
 # Keep this file private because Azure DevOps personal access tokens are secrets.
 deployment: cloud
 azure_devops_url: "https://dev.azure.com/your-org"

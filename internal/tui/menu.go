@@ -37,17 +37,16 @@ var menuTree = []menuNode{
 		{label: "Create files", description: "Create empty local files and folders.", commandID: "create-files"},
 	}},
 	{label: "Read", description: "Inspect and compare Azure DevOps resources.", children: []menuNode{
-		{label: "List", description: "List pipelines, releases, and agent pools.", children: []menuNode{
+		{label: "List", description: "List pipelines, releases, agent pools, and configuration.", children: []menuNode{
 			{label: "Release pipelines", description: "List pipeline folders and definitions.", commandID: "list-releases"},
 			{label: "Agent pools", description: "List pools and their agents.", commandID: "list-pools"},
-		}},
-		{label: "Show", description: "Show details for pipelines and releases.", children: []menuNode{
-			{label: "Pipeline variables", description: "Show pipeline and stage variables.", commandID: "show-pipeline-variables"},
-			{label: "Pipeline steps", description: "Show stages, tasks, and scripts.", commandID: "show-pipeline-steps"},
-			{label: "Pipeline schedule", description: "Show scheduled triggers.", commandID: "show-pipeline-schedule"},
-			{label: "Pipeline agent job", description: "Show pool, demands, and timeouts.", commandID: "show-pipeline-agent-job"},
-			{label: "Release history", description: "Show recent releases and stage statuses.", commandID: "show-release-history"},
-			{label: "Release status", description: "Show latest status across pipelines.", commandID: "show-release-status"},
+			{label: "Pool members", description: "List agents belonging to matching pools.", commandID: "list-pool-members"},
+			{label: "Pipeline variables", description: "List pipeline and stage variables.", commandID: "list-pipeline-variables"},
+			{label: "Pipeline steps", description: "List stages, tasks, and scripts.", commandID: "list-pipeline-steps"},
+			{label: "Pipeline schedule", description: "List scheduled triggers.", commandID: "list-pipeline-schedule"},
+			{label: "Pipeline agent job", description: "List pool, demands, and timeouts.", commandID: "list-pipeline-agent-job"},
+			{label: "Release history", description: "List recent releases and stage statuses.", commandID: "list-release-history"},
+			{label: "Release status", description: "List latest status across pipelines.", commandID: "list-release-status"},
 		}},
 		{label: "Compare pipelines", description: "Compare variables, jobs, and tasks.", commandID: "compare-pipelines"},
 	}},

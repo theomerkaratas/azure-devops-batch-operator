@@ -1,5 +1,5 @@
-// Command show-release-history shows the most recent releases of an Azure DevOps release pipeline.
-package showreleasehistory
+// Command list-release-history lists the most recent releases of an Azure DevOps release pipeline.
+package listreleasehistory
 
 import (
 	"flag"
@@ -13,23 +13,23 @@ import (
 
 const usageEpilog = `
 Example:
-  show-release-history 'Example.Project\PREP\CONFIG\PREPAPP\Example.API' --top 5
+  list-release-history 'Example.Project\PREP\CONFIG\PREPAPP\Example.API' --top 5
 Arguments:
   pipeline_path  Required. Full pipeline path in 'Project\Folder\SubFolder\PipelineName' format.
-  --top          Optional. Number of most recent releases to show (default: 10).
+  --top          Optional. Number of most recent releases to list (default: 10).
   --level        Optional. The PAT authorization level to use (default: read).
                  Choices: read | read-write | manage
 `
 
 // Main runs the command using os.Args.
 func Main() {
-	fs := flag.NewFlagSet("show-release-history", flag.ExitOnError)
+	fs := flag.NewFlagSet("list-release-history", flag.ExitOnError)
 	level := fs.String("level", azuredevops.DefaultLevel("read"), fmt.Sprintf("PAT authorization level to use: %s (default: config default_token or read)", strings.Join(azuredevops.Levels(), ", ")))
-	top := fs.Int("top", 10, "number of most recent releases to show (default: 10)")
+	top := fs.Int("top", 10, "number of most recent releases to list (default: 10)")
 	fs.Usage = func() {
-		fmt.Fprintln(os.Stderr, "Shows the most recent releases of a release pipeline: who created them, when, and stage statuses.")
+		fmt.Fprintln(os.Stderr, "Lists the most recent releases of a release pipeline: who created them, when, and stage statuses.")
 		fmt.Fprintln(os.Stderr)
-		fmt.Fprintln(os.Stderr, "Usage: show-release-history <pipeline_path> [--top N] [--level read|read-write|manage]")
+		fmt.Fprintln(os.Stderr, "Usage: list-release-history <pipeline_path> [--top N] [--level read|read-write|manage]")
 		fmt.Fprintln(os.Stderr)
 		fs.PrintDefaults()
 		fmt.Fprint(os.Stderr, usageEpilog)

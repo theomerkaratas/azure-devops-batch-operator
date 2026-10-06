@@ -23,7 +23,7 @@ Arguments:
   destination  Required. Full path of the new pipeline: 'Project\Folder\NewName'.
                It must be in the same project, and must not exist yet. A missing folder is created.
   --level      Optional. PAT level (default: read-write). Choices: read-write | manage
-  --dry-run    Shows what would be created without creating anything.
+  --dry-run    Lists what would be created without creating anything.
   -y, --yes    Skips the confirmation prompt.
 Note: secret variable values are not returned by Azure DevOps, so the clone's secret variables
 are empty and must be set again (see update-pipeline-variables --secret).
@@ -33,7 +33,7 @@ are empty and must be set again (see update-pipeline-variables --secret).
 func Main() {
 	fs := flag.NewFlagSet("clone-pipeline", flag.ExitOnError)
 	level := fs.String("level", azuredevops.DefaultLevel("read-write"), "PAT authorization level to use: read, read-write, manage (default: config default_token or read-write)")
-	dryRun := fs.Bool("dry-run", false, "Shows what would be created without creating anything")
+	dryRun := fs.Bool("dry-run", false, "Lists what would be created without creating anything")
 	yes := fs.Bool("yes", false, "Skips the confirmation prompt")
 	fs.BoolVar(yes, "y", false, "Shorthand for --yes")
 	fs.Usage = func() {
