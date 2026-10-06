@@ -60,6 +60,10 @@ var menuTree = []menuNode{
 	}},
 	{label: "Delete", description: "Permanently delete matching release pipelines.", commandID: "delete-pipelines"},
 	{label: "Cancel", description: "Cancel deployments and optionally abandon releases.", commandID: "cancel-releases"},
+	{label: "Backup", description: "Back up or restore release pipeline definitions.", children: []menuNode{
+		{label: "Back up pipelines", description: "Save matching pipelines' definitions to local JSON files.", commandID: "backup-pipelines"},
+		{label: "Restore pipelines", description: "Recreate or overwrite pipelines from backup JSON files.", commandID: "restore-pipelines"},
+	}},
 }
 
 func (m model) currentMenu() []menuNode {

@@ -499,6 +499,27 @@ var writeCommandSpecs = []commandSpec{
 		},
 	},
 	{
+		id:          "restore-pipelines",
+		description: "Recreates or overwrites release pipelines from backup-pipelines JSON files.",
+		newFields: func() []*field {
+			return []*field{
+				textField("backup_path", "Backup file or folder", "e.g. ./backups/Example.Project/TEST/CONFIG", true).
+					withHelp("A single backup JSON file, or a folder to restore every *.json backup found under it."),
+				textField("filter", "Filename filter (optional)", "text in backup filename", false).
+					withHelp("Only backup files whose filename contains this text."),
+				choiceField("level", "PAT level", writeLevels(), 0).withHelp(levelHelp),
+				boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["backup_path"]}
+			if v["filter"] != "" {
+				args = append(args, "--filter", v["filter"])
+			}
+			return writeTail(args, v), nil
+		},
+	},
+	{
 		id:          "trigger-release",
 		description: "Creates new releases for all release pipelines under a path (batch).",
 		newFields: func() []*field {
@@ -510,6 +531,8 @@ var writeCommandSpecs = []commandSpec{
 					withHelp("Description stored on each release that gets created."),
 				textField("stages", "Manual stages (;-separated)", "e.g. Development", false).
 					withHelp("Stages to deploy immediately instead of leaving for manual approval, separated by ';'."),
+				textField("interval", "Interval seconds (optional)", "e.g. 2 (empty = all at once)", false).
+					withHelp("Seconds to wait between consecutive releases. Leave empty to trigger every release at once."),
 				choiceField("level", "PAT level", writeLevels(), 0).withHelp(levelHelp),
 				boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
 			}
@@ -521,6 +544,13 @@ var writeCommandSpecs = []commandSpec{
 			}
 			for _, s := range splitList(v["stages"]) {
 				args = append(args, "--stage", s)
+			}
+			if v["interval"] != "" {
+				n, err := strconv.ParseFloat(v["interval"], 64)
+				if err != nil || n < 0 {
+					return nil, fmt.Errorf("interval seconds must be a non-negative number")
+				}
+				args = append(args, "--interval", v["interval"])
 			}
 			return writeTail(args, v), nil
 		},
@@ -725,6 +755,35 @@ var commandSpecs = []commandSpec{
 				// The TUI's own Run action is the confirmation; skip the subprocess' interactive
 				// stdin prompt since it isn't attached to a terminal here.
 				args = append(args, "--yes")
+			}
+			return args, nil
+		},
+	},
+	{
+		id:          "backup-pipelines",
+		description: "Saves matching release pipelines' definitions to local JSON files.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST\CONFIG`, true).
+					withHelp("Folder or single pipeline path to back up."),
+				textField("out", "Output folder", "e.g. ./backups", true).
+					withHelp("Local folder to write one JSON file per pipeline into (project/folder structure is mirrored)."),
+				textField("filter", "Name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				choiceField("level", "PAT level", readLevels(), 0).withHelp(levelHelp),
+				boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			if v["out"] == "" {
+				return nil, fmt.Errorf("output folder is required")
+			}
+			args := []string{v["target"], "--out", v["out"]}
+			if v["filter"] != "" {
+				args = append(args, "--filter", v["filter"])
+			}
+			args = append(args, "--level", v["level"])
+			if v["dry_run"] == "yes" {
+				args = append(args, "--dry-run")
 			}
 			return args, nil
 		},

@@ -2,8 +2,8 @@ package tui
 
 import "testing"
 
-func TestMainMenuHasSixTopLevelCategories(t *testing.T) {
-	want := []string{"Create", "Clone", "Read", "Update", "Delete", "Cancel"}
+func TestMainMenuHasSevenTopLevelCategories(t *testing.T) {
+	want := []string{"Create", "Clone", "Read", "Update", "Delete", "Cancel", "Backup"}
 	if len(menuTree) != len(want) {
 		t.Fatalf("main menu has %d entries, want %d", len(menuTree), len(want))
 	}

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/omerkaratas/azure-devops-go-automations/internal/azuredevops"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/backuppipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/cancelreleases"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/clonepipeline"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/comparepipelines"
@@ -25,6 +26,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listreleases"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listreleasestatus"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/renameormovepipelines"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/restorepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/triggerrelease"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineagentjob"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinedemands"
@@ -40,6 +42,8 @@ const Name = "a22r"
 var version = "dev"
 
 var commands = map[string]func(){
+	"backup-pipelines":           backuppipelines.Main,
+	"restore-pipelines":          restorepipelines.Main,
 	"cancel-releases":            cancelreleases.Main,
 	"clone-pipeline":             clonepipeline.Main,
 	"compare-pipelines":          comparepipelines.Main,

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/omerkaratas/azure-devops-go-automations/internal/azuredevops"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/batchupdate"
@@ -26,6 +27,7 @@ Arguments:
   --description  Optional. Description stored on each created release.
   --stage        Optional. Stage to start manually (stages that don't auto-start). May be given multiple times.
                  Artifacts use their latest versions.
+  --interval     Optional. Seconds to wait between consecutive releases (default: 0, all at once).
   --level        Optional. PAT level (default: read-write). Choices: read-write | manage
   --dry-run      Lists the pipelines that would be released without creating anything.
   -y, --yes      Skips the confirmation prompt.
@@ -46,6 +48,7 @@ func Main() {
 	fs.Var(&stages, "stage", "Stage to start manually. May be given multiple times.")
 	filter := fs.String("filter", "", "Only pipelines whose name contains this text")
 	description := fs.String("description", "Triggered by azure-devops-batch-operator", "Description stored on each created release")
+	interval := fs.Float64("interval", 0, "Seconds to wait between consecutive releases (default: 0, all at once)")
 	level := fs.String("level", azuredevops.DefaultLevel("read-write"), "PAT authorization level to use: read, read-write, manage (default: config default_token or read-write)")
 	dryRun := fs.Bool("dry-run", false, "Lists the pipelines that would be released without creating anything")
 	yes := fs.Bool("yes", false, "Skips the confirmation prompt")
@@ -58,7 +61,7 @@ func Main() {
 		fs.PrintDefaults()
 		fmt.Fprint(os.Stderr, usageEpilog)
 	}
-	valueFlags := map[string]bool{"stage": true, "filter": true, "description": true, "level": true}
+	valueFlags := map[string]bool{"stage": true, "filter": true, "description": true, "interval": true, "level": true}
 	if err := fs.Parse(cliutil.ReorderArgs(os.Args[1:], valueFlags)); err != nil {
 		os.Exit(2)
 	}
@@ -70,12 +73,16 @@ func Main() {
 		fmt.Fprintln(os.Stderr, "Error: --level must be one of: read-write, manage")
 		os.Exit(2)
 	}
-	if err := run(fs.Arg(0), *filter, *description, []string(stages), *level, *dryRun, *yes); err != nil {
+	if *interval < 0 {
+		fmt.Fprintln(os.Stderr, "Error: --interval must not be negative")
+		os.Exit(2)
+	}
+	if err := run(fs.Arg(0), *filter, *description, []string(stages), *interval, *level, *dryRun, *yes); err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err)
 		os.Exit(1)
 	}
 }
-func run(target, filter, description string, stages []string, level string, dryRun, autoYes bool) error {
+func run(target, filter, description string, stages []string, interval float64, level string, dryRun, autoYes bool) error {
 	cfg, err := azuredevops.LoadConfig(level)
 	if err != nil {
 		return err
@@ -91,6 +98,9 @@ func run(target, filter, description string, stages []string, level string, dryR
 	fmt.Printf("Target: %s\nPipelines found: %d\nLevel: %s\n", target, len(defs), level)
 	if len(stages) > 0 {
 		fmt.Printf("Manual stages: %s\n", strings.Join(stages, ", "))
+	}
+	if interval > 0 {
+		fmt.Printf("Interval: %gs between releases\n", interval)
 	}
 	if dryRun {
 		fmt.Println(">>> DRY-RUN MODE ACTIVE (no releases will be created) <<<")
@@ -113,7 +123,10 @@ func run(target, filter, description string, stages []string, level string, dryR
 	}
 	fmt.Println("\nCreating releases...")
 	ok, failed := 0, 0
-	for _, d := range defs {
+	for i, d := range defs {
+		if i > 0 && interval > 0 {
+			time.Sleep(time.Duration(interval * float64(time.Second)))
+		}
 		rel, err := cfg.CreateRelease(project, d.ID, description, stages)
 		if err != nil {
 			fmt.Printf("  x %s ERROR: %v\n", d.Name, err)
