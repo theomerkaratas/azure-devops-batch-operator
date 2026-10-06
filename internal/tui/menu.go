@@ -32,10 +32,11 @@ type menuNode struct {
 
 var menuTree = []menuNode{
 	{label: "Create", description: "Create pipelines, releases, or local files.", children: []menuNode{
-		{label: "Clone pipeline", description: "Copy an existing release pipeline.", commandID: "clone-pipeline"},
+		{label: "PowerShell pipeline", description: "Create a release pipeline from PowerShell scripts.", commandID: "create-powershell-pipeline"},
 		{label: "Trigger release", description: "Create releases for matching pipelines.", commandID: "trigger-release"},
 		{label: "Create files", description: "Create empty local files and folders.", commandID: "create-files"},
 	}},
+	{label: "Clone", description: "Copy an existing release pipeline.", commandID: "clone-pipeline"},
 	{label: "Read", description: "Inspect and compare Azure DevOps resources.", children: []menuNode{
 		{label: "List", description: "List pipelines, releases, agent pools, and configuration.", children: []menuNode{
 			{label: "Release pipelines", description: "List pipeline folders and definitions.", commandID: "list-releases"},
@@ -57,10 +58,8 @@ var menuTree = []menuNode{
 		{label: "Pipeline demands", description: "Set, add, remove, or clear demands.", commandID: "update-pipeline-demands"},
 		{label: "Rename or move pipelines", description: "Rename pipelines or move them between folders.", commandID: "rename-or-move-pipelines"},
 	}},
-	{label: "Delete", description: "Delete pipelines or cancel active releases.", children: []menuNode{
-		{label: "Delete pipelines", description: "Permanently delete matching release pipelines.", commandID: "delete-pipelines"},
-		{label: "Cancel releases", description: "Cancel deployments and optionally abandon releases.", commandID: "cancel-releases"},
-	}},
+	{label: "Delete", description: "Permanently delete matching release pipelines.", commandID: "delete-pipelines"},
+	{label: "Cancel", description: "Cancel deployments and optionally abandon releases.", commandID: "cancel-releases"},
 }
 
 func (m model) currentMenu() []menuNode {
@@ -148,9 +147,6 @@ func (m model) openSelected() (tea.Model, tea.Cmd) {
 		cmds = append(cmds, m.fields[0].input.Focus())
 	}
 	m.state = stateForm
-	if _, cached := m.helpCache[spec.id]; !cached {
-		cmds = append(cmds, loadHelp(spec))
-	}
 	return m, tea.Batch(cmds...)
 }
 
@@ -255,11 +251,13 @@ func (m model) viewMenu() string {
 	}
 	for pos := start; pos < end; pos++ {
 		node := nodes[vis[pos]]
-		label := node.label
+		// Pad the label to a fixed width first, then append the chevron, so the chevron
+		// lands in the same column for every row regardless of label length.
+		arrow := "  "
 		if len(node.children) > 0 {
-			label += "  ›"
+			arrow = " ›"
 		}
-		line := truncate(fmt.Sprintf("%-*s  %s", maxLabel+3, label, node.description), m.width-4)
+		line := truncate(fmt.Sprintf("%-*s%s  %s", maxLabel, node.label, arrow, node.description), m.width-4)
 		if pos == m.menuIdx {
 			b.WriteString(selCell.Render("▸ " + line))
 		} else {

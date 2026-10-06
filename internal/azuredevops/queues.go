@@ -2,6 +2,7 @@ package azuredevops
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 )
 
@@ -58,10 +59,33 @@ func (c Config) GetProjectQueues(project string) map[int]string {
 }
 
 type distributedTaskQueue struct {
+	ID   int    `json:"id"`
 	Name string `json:"name"`
 	Pool struct {
 		Name string `json:"name"`
 	} `json:"pool"`
+}
+
+// ResolveQueueID resolves an agent pool or project queue name to the queue ID required by an
+// agent-based release phase. Project queues are queried first; build definitions are a fallback.
+func (c Config) ResolveQueueID(project, name string) (int, error) {
+	url := fmt.Sprintf("%s/_apis/distributedtask/queues?api-version=%s", c.projectBaseURL(project), c.apiVersion())
+	var resp struct {
+		Value []distributedTaskQueue `json:"value"`
+	}
+	if err := c.Get(url, &resp); err == nil {
+		for _, queue := range resp.Value {
+			if strings.EqualFold(queue.Name, name) || strings.EqualFold(queue.Pool.Name, name) {
+				return queue.ID, nil
+			}
+		}
+	}
+	for id, queueName := range c.GetProjectQueues(project) {
+		if strings.EqualFold(queueName, name) {
+			return id, nil
+		}
+	}
+	return 0, fmt.Errorf("agent pool/queue %q not found in project %s; use --queue-id", name, project)
 }
 
 // ResolvePoolName resolves a deployment queueId to a human-readable pool name, preferring the
