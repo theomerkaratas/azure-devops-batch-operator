@@ -252,12 +252,9 @@ func (m model) viewMenu() string {
 	for pos := start; pos < end; pos++ {
 		node := nodes[vis[pos]]
 		// Pad the label to a fixed width first, then append the chevron, so the chevron
-		// lands in the same column for every row regardless of label length.
-		arrow := "  "
-		if len(node.children) > 0 {
-			arrow = " ›"
-		}
-		line := truncate(fmt.Sprintf("%-*s%s  %s", maxLabel, node.label, arrow, node.description), m.width-4)
+		// lands in the same column for every row regardless of label length. Every entry
+		// gets a chevron, whether it opens a submenu or jumps straight to a command's form.
+		line := truncate(fmt.Sprintf("%-*s ›  %s", maxLabel, node.label, node.description), m.width-4)
 		if pos == m.menuIdx {
 			b.WriteString(selCell.Render("▸ " + line))
 		} else {
