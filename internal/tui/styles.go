@@ -13,7 +13,9 @@ var (
 	cellStyle = lipgloss.NewStyle()
 	selCell   = cellStyle.Bold(true).Foreground(lipgloss.Color("0")).Background(lipgloss.Color("39"))
 
-	labelStyle      = lipgloss.NewStyle().Width(22)
+	// labelStyle is wide enough to fit the longest field label (e.g. "Force (cancel active
+	// deployments)") on a single line, so none of the form's labels wrap.
+	labelStyle      = lipgloss.NewStyle().Width(34)
 	focusLabelStyle = labelStyle.Bold(true).Foreground(lipgloss.Color("39"))
 
 	runButtonStyle      = lipgloss.NewStyle().Padding(0, 2).Foreground(lipgloss.Color("255")).Background(lipgloss.Color("240"))

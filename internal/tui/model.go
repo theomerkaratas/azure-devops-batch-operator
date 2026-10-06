@@ -54,9 +54,7 @@ type model struct {
 	histIdx     int
 	fromHistory bool
 
-	// helpCache maps command id to its captured --help text.
-	helpCache map[string]string
-	inputs    savedInputs
+	inputs savedInputs
 
 	pick  *picker
 	cache *pickCache
@@ -67,11 +65,10 @@ func initialModel() model {
 	ti.Prompt = "/ "
 	ti.Placeholder = "filter commands"
 	return model{
-		state:     stateMenu,
-		helpCache: map[string]string{},
-		inputs:    loadInputs(),
-		filter:    ti,
-		cache:     &pickCache{defs: map[string][]azuredevops.ReleaseDefinition{}},
+		state:  stateMenu,
+		inputs: loadInputs(),
+		filter: ti,
+		cache:  &pickCache{defs: map[string][]azuredevops.ReleaseDefinition{}},
 	}
 }
 
@@ -85,11 +82,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.state == stateOutput {
 			m.resizeViewport()
 		}
-		return m, nil
-	}
-
-	if hm, ok := msg.(helpMsg); ok {
-		m.helpCache[hm.id] = hm.text
 		return m, nil
 	}
 

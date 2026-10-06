@@ -13,6 +13,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/clonepipeline"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/comparepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/createfiles"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/createpowershellpipeline"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/deletepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelineagentjob"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelineschedule"
@@ -39,26 +40,27 @@ const Name = "a22r"
 var version = "dev"
 
 var commands = map[string]func(){
-	"cancel-releases":           cancelreleases.Main,
-	"clone-pipeline":            clonepipeline.Main,
-	"compare-pipelines":         comparepipelines.Main,
-	"create-files":              createfiles.Main,
-	"delete-pipelines":          deletepipelines.Main,
-	"list-pool-members":         listpoolmembers.Main,
-	"list-pools":                listpools.Main,
-	"list-releases":             listreleases.Main,
-	"rename-or-move-pipelines":  renameormovepipelines.Main,
-	"list-pipeline-agent-job":   listpipelineagentjob.Main,
-	"list-pipeline-schedule":    listpipelineschedule.Main,
-	"list-pipeline-steps":       listpipelinesteps.Main,
-	"list-pipeline-variables":   listpipelinevariables.Main,
-	"list-release-history":      listreleasehistory.Main,
-	"list-release-status":       listreleasestatus.Main,
-	"trigger-release":           triggerrelease.Main,
-	"update-pipeline-agent-job": updatepipelineagentjob.Main,
-	"update-pipeline-demands":   updatepipelinedemands.Main,
-	"update-pipeline-schedule":  updatepipelineschedule.Main,
-	"update-pipeline-variables": updatepipelinevariables.Main,
+	"cancel-releases":            cancelreleases.Main,
+	"clone-pipeline":             clonepipeline.Main,
+	"compare-pipelines":          comparepipelines.Main,
+	"create-files":               createfiles.Main,
+	"create-powershell-pipeline": createpowershellpipeline.Main,
+	"delete-pipelines":           deletepipelines.Main,
+	"list-pool-members":          listpoolmembers.Main,
+	"list-pools":                 listpools.Main,
+	"list-releases":              listreleases.Main,
+	"rename-or-move-pipelines":   renameormovepipelines.Main,
+	"list-pipeline-agent-job":    listpipelineagentjob.Main,
+	"list-pipeline-schedule":     listpipelineschedule.Main,
+	"list-pipeline-steps":        listpipelinesteps.Main,
+	"list-pipeline-variables":    listpipelinevariables.Main,
+	"list-release-history":       listreleasehistory.Main,
+	"list-release-status":        listreleasestatus.Main,
+	"trigger-release":            triggerrelease.Main,
+	"update-pipeline-agent-job":  updatepipelineagentjob.Main,
+	"update-pipeline-demands":    updatepipelinedemands.Main,
+	"update-pipeline-schedule":   updatepipelineschedule.Main,
+	"update-pipeline-variables":  updatepipelinevariables.Main,
 }
 
 // Main dispatches on os.Args and never returns normally for a command (commands call os.Exit).

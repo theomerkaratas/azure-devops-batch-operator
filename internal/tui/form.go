@@ -17,30 +17,25 @@ type execDoneMsg struct {
 	err    error
 }
 
-// helpMsg carries a command's captured --help output.
-type helpMsg struct {
-	id   string
-	text string
-}
-
-func loadHelp(spec *commandSpec) tea.Cmd {
-	return func() tea.Msg {
-		out, _ := exec.Command(selfExe(), spec.id, "--help").CombinedOutput()
-		return helpMsg{id: spec.id, text: string(out)}
-	}
-}
-
 // setFocus blurs every field, focuses the one at idx (if it's a text field) and updates
 // m.focusIdx. idx == len(m.fields) represents the "Run" button.
 func (m *model) setFocus(idx int) tea.Cmd {
 	for _, f := range m.fields {
-		if f.kind == fieldText {
+		switch f.kind {
+		case fieldText:
 			f.input.Blur()
+		case fieldTextarea:
+			f.area.Blur()
 		}
 	}
 	m.focusIdx = idx
-	if idx < len(m.fields) && m.fields[idx].kind == fieldText {
-		return m.fields[idx].input.Focus()
+	if idx < len(m.fields) {
+		switch m.fields[idx].kind {
+		case fieldText:
+			return m.fields[idx].input.Focus()
+		case fieldTextarea:
+			return m.fields[idx].area.Focus()
+		}
 	}
 	return nil
 }
@@ -61,11 +56,23 @@ func (m model) updateForm(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.activeSpec = nil
 		m.formErr = ""
 		return m, nil
-	case "tab", "down":
+	case "tab":
 		cmd := m.setFocus((m.focusIdx + 1) % n)
 		return m, cmd
-	case "shift+tab", "up":
+	case "shift+tab":
 		cmd := m.setFocus((m.focusIdx - 1 + n) % n)
+		return m, cmd
+	case "down", "up":
+		if m.focusIdx < len(m.fields) && m.fields[m.focusIdx].kind == fieldTextarea {
+			var cmd tea.Cmd
+			m.fields[m.focusIdx].area, cmd = m.fields[m.focusIdx].area.Update(msg)
+			return m, cmd
+		}
+		delta := 1
+		if keyMsg.String() == "up" {
+			delta = -1
+		}
+		cmd := m.setFocus((m.focusIdx + delta + n) % n)
 		return m, cmd
 	case "left", "right":
 		if m.focusIdx < len(m.fields) {
@@ -80,6 +87,11 @@ func (m model) updateForm(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	case "enter":
+		if m.focusIdx < len(m.fields) && m.fields[m.focusIdx].kind == fieldTextarea {
+			var cmd tea.Cmd
+			m.fields[m.focusIdx].area, cmd = m.fields[m.focusIdx].area.Update(msg)
+			return m, cmd
+		}
 		if m.focusIdx < len(m.fields) && m.fields[m.focusIdx].pick != pickNone {
 			return m.openPicker()
 		}
@@ -95,6 +107,11 @@ func (m model) updateForm(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.focusIdx < len(m.fields) && m.fields[m.focusIdx].kind == fieldText {
 		var cmd tea.Cmd
 		m.fields[m.focusIdx].input, cmd = m.fields[m.focusIdx].input.Update(msg)
+		return m, cmd
+	}
+	if m.focusIdx < len(m.fields) && m.fields[m.focusIdx].kind == fieldTextarea {
+		var cmd tea.Cmd
+		m.fields[m.focusIdx].area, cmd = m.fields[m.focusIdx].area.Update(msg)
 		return m, cmd
 	}
 	return m, nil
@@ -160,12 +177,15 @@ func (m model) viewForm() string {
 		}
 
 		var value string
-		if f.kind == fieldText {
+		switch f.kind {
+		case fieldText:
 			value = f.input.View()
 			if focused && f.pick != pickNone {
 				value += " " + helpStyle.Render("[enter: browse]")
 			}
-		} else {
+		case fieldTextarea:
+			value = "\n" + f.area.View()
+		default:
 			value = "‹ " + f.value() + " ›"
 		}
 		b.WriteString(prefix + lbl.Render(f.label) + " " + value + "\n")
@@ -184,13 +204,18 @@ func (m model) viewForm() string {
 	}
 
 	b.WriteString("\n")
-	b.WriteString(helpStyle.Render("tab/↓/↑: move • ←/→: change choice • enter: browse path/next/run • esc: back"))
+	b.WriteString(helpStyle.Render("tab/↓/↑: move • ←/→: change choice • enter: newline in editor or browse/next/run • esc: back"))
 
 	b.WriteString("\n\n")
-	if text, ok := m.helpCache[m.activeSpec.id]; ok {
-		b.WriteString(descStyle.Render(strings.TrimRight(text, "\n")))
-	} else {
-		b.WriteString(descStyle.Render("Loading help..."))
+	b.WriteString(descStyle.Render(m.activeSpec.description))
+	for _, f := range m.fields {
+		if f.help == "" {
+			continue
+		}
+		b.WriteString("\n")
+		b.WriteString(labelStyle.Render(f.label+":") + " " + helpStyle.Render(f.help))
 	}
+	b.WriteString("\n\n")
+	b.WriteString(helpStyle.Render(fmt.Sprintf("Run `%s --help` in a shell for full flag details.", m.activeSpec.id)))
 	return b.String()
 }

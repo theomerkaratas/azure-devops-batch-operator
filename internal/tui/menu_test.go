@@ -2,8 +2,8 @@ package tui
 
 import "testing"
 
-func TestMainMenuHasFourCRUDCategories(t *testing.T) {
-	want := []string{"Create", "Read", "Update", "Delete"}
+func TestMainMenuHasSixTopLevelCategories(t *testing.T) {
+	want := []string{"Create", "Clone", "Read", "Update", "Delete", "Cancel"}
 	if len(menuTree) != len(want) {
 		t.Fatalf("main menu has %d entries, want %d", len(menuTree), len(want))
 	}
@@ -15,7 +15,7 @@ func TestMainMenuHasFourCRUDCategories(t *testing.T) {
 }
 
 func TestReadMenuGroupsDetailCommandsUnderList(t *testing.T) {
-	readMenu := menuTree[1].children
+	readMenu := menuTree[2].children
 	want := []string{"List", "Compare pipelines"}
 	if len(readMenu) != len(want) {
 		t.Fatalf("read menu has %d entries, want %d", len(readMenu), len(want))

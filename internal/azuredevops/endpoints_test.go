@@ -80,3 +80,28 @@ func TestDeleteDefinitionUsesReleaseEndpoint(t *testing.T) {
 		t.Fatalf("request URL = %q, want %q", requestURL, want)
 	}
 }
+
+func TestResolveQueueIDUsesProjectQueueEndpoint(t *testing.T) {
+	cfg := Config{
+		Deployment: DeploymentCloud,
+		OrgURL:     "https://dev.azure.com/example",
+		ReleaseURL: "https://vsrm.dev.azure.com/example",
+	}
+	var requestURL string
+	stubHTTPClient(t, func(r *http.Request) (*http.Response, error) {
+		requestURL = r.URL.String()
+		return response(http.StatusOK, `{"value":[{"id":42,"name":"Windows Queue","pool":{"name":"Windows Agents"}}]}`), nil
+	})
+
+	got, err := cfg.ResolveQueueID("My Project", "windows agents")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != 42 {
+		t.Fatalf("queue ID = %d, want 42", got)
+	}
+	wantURL := "https://dev.azure.com/example/My%20Project/_apis/distributedtask/queues?api-version=7.1"
+	if requestURL != wantURL {
+		t.Fatalf("request URL = %q, want %q", requestURL, wantURL)
+	}
+}

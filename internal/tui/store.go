@@ -44,6 +44,10 @@ func (s savedInputs) apply(id string, fields []*field) {
 			f.input.SetValue(v)
 			continue
 		}
+		if f.kind == fieldTextarea {
+			f.area.SetValue(v)
+			continue
+		}
 		for i, c := range f.choices {
 			if c == v {
 				f.choiceIdx = i

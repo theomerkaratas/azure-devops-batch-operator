@@ -196,6 +196,7 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `clone-pipeline`
 - `compare-pipelines`
 - `create-files`
+- `create-powershell-pipeline`
 - `delete-pipelines`
 - `list-pool-members`
 - `list-pools`
@@ -214,6 +215,18 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `update-pipeline-variables`
 
 Use `--dry-run` before applying batch changes. Commands that make changes may also require `--yes` (or `-y`) to skip interactive confirmation.
+
+Create a classic release pipeline containing ordered, inline PowerShell tasks:
+
+```console
+a22r create-powershell-pipeline 'Example.Project\Deploy\Restart Services' \
+  --script stop.ps1 \
+  --script start.ps1 \
+  --pool WindowsAgents \
+  --dry-run
+```
+
+Replace `--pool WindowsAgents` with `--queue-id 42` when the project queue cannot be resolved by name. Add `--pwsh` to execute the tasks with PowerShell Core. The script files are embedded in the release definition, so the pipeline does not require a build artifact.
 
 ## Build from source
 
