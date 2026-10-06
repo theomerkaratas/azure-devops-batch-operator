@@ -56,6 +56,8 @@ var pickModes = map[string]pickMode{
 	"pipeline_path": pickPipeline,
 	"pipeline_a":    pickPipeline,
 	"pipeline_b":    pickPipeline,
+	"folder_a":      pickAny,
+	"folder_b":      pickAny,
 	"source":        pickPipeline,
 	"destination":   pickNewPipeline,
 	"move_to":       pickFolder,
@@ -575,6 +577,32 @@ var commandSpecs = []commandSpec{
 		},
 		buildArgs: func(v map[string]string) ([]string, error) {
 			return []string{v["pipeline_a"], v["pipeline_b"], "--level", v["level"]}, nil
+		},
+	},
+	{
+		id:          "compare-folders",
+		description: "Compares the release pipelines under two folders: counts, names, and content.",
+		newFields: func() []*field {
+			return []*field{
+				textField("folder_a", "Folder A path", `e.g. Example.Project\DEV\CONFIG`, true).
+					withHelp("First folder in the comparison."),
+				textField("folder_b", "Folder B path", `e.g. Example.Project\TEST\CONFIG`, true).
+					withHelp("Second folder in the comparison."),
+				textField("filter", "Name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				boolField("names_only", "Names only (skip content diff)", false).
+					withHelp("Yes: only compare pipeline counts and names. No: also diff the content of pipelines present on both sides."),
+				choiceField("level", "PAT level", readLevels(), 0).withHelp(levelHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["folder_a"], v["folder_b"]}
+			if v["filter"] != "" {
+				args = append(args, "--filter", v["filter"])
+			}
+			if v["names_only"] == "yes" {
+				args = append(args, "--names-only")
+			}
+			return append(args, "--level", v["level"]), nil
 		},
 	},
 	{

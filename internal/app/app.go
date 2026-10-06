@@ -12,6 +12,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/backuppipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/cancelreleases"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/clonepipeline"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/comparefolders"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/comparepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/createfiles"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/createpowershellpipeline"
@@ -47,6 +48,7 @@ var commands = map[string]func(){
 	"cancel-releases":            cancelreleases.Main,
 	"clone-pipeline":             clonepipeline.Main,
 	"compare-pipelines":          comparepipelines.Main,
+	"compare-folders":            comparefolders.Main,
 	"create-files":               createfiles.Main,
 	"create-powershell-pipeline": createpowershellpipeline.Main,
 	"delete-pipelines":           deletepipelines.Main,

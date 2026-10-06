@@ -6,10 +6,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"sort"
 	"strings"
 
 	"github.com/omerkaratas/azure-devops-go-automations/internal/azuredevops"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/batchupdate"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/cliutil"
 )
 
@@ -48,7 +48,8 @@ func Main() {
 	}
 }
 
-// flatten turns a definition into a key -> value map so two definitions can be diffed generically.
+// flatten resolves a pipeline path and turns its definition into a key -> value map, so two
+// definitions can be diffed generically.
 func flatten(cfg azuredevops.Config, pipelinePath string) (map[string]string, error) {
 	project, _, _, err := azuredevops.ParsePipelinePath(pipelinePath)
 	if err != nil {
@@ -58,36 +59,9 @@ func flatten(cfg azuredevops.Config, pipelinePath string) (map[string]string, er
 	if err != nil {
 		return nil, err
 	}
-	out := map[string]string{}
-	addVars := func(prefix string, vars map[string]azuredevops.ConfigVariable) {
-		for n, v := range vars {
-			if v.IsSecret {
-				out[prefix+"variable "+n] = "(secret)"
-			} else {
-				out[prefix+"variable "+n] = v.Value
-			}
-		}
-	}
-	addVars("", def.Variables)
-	for _, env := range def.Environments {
-		sp := "stage " + env.Name + ": "
-		out[sp+"exists"] = "yes"
-		addVars(sp, env.Variables)
-		for _, phase := range env.DeployPhases {
-			jp := sp + "job " + phase.Name + ": "
-			if di := phase.DeploymentInput; di != nil {
-				out[jp+"agent pool"] = cfg.ResolvePoolName(project, di.QueueID)
-				out[jp+"demands"] = strings.Join(di.Demands, "; ")
-				out[jp+"timeout (min)"] = fmt.Sprint(di.TimeoutInMinutes)
-				out[jp+"condition"] = di.Condition
-			}
-			for i, t := range phase.WorkflowTasks {
-				out[fmt.Sprintf("%stask %02d", jp, i+1)] = fmt.Sprintf("%s (enabled=%v)", t.Name, t.Enabled)
-			}
-		}
-	}
-	return out, nil
+	return batchupdate.FlattenDetail(cfg, project, def), nil
 }
+
 func run(pathA, pathB, level string) error {
 	cfg, err := azuredevops.LoadConfig(level)
 	if err != nil {
@@ -101,35 +75,8 @@ func run(pathA, pathB, level string) error {
 	if err != nil {
 		return fmt.Errorf("%s: %w", pathB, err)
 	}
-	keys := map[string]bool{}
-	for k := range a {
-		keys[k] = true
-	}
-	for k := range b {
-		keys[k] = true
-	}
-	sorted := make([]string, 0, len(keys))
-	for k := range keys {
-		sorted = append(sorted, k)
-	}
-	sort.Strings(sorted)
 	fmt.Printf("A: %s\nB: %s\n\n", pathA, pathB)
-	diffs := 0
-	for _, k := range sorted {
-		va, inA := a[k]
-		vb, inB := b[k]
-		switch {
-		case inA && !inB:
-			fmt.Printf("- only in A  %s = %s\n", k, va)
-		case !inA && inB:
-			fmt.Printf("+ only in B  %s = %s\n", k, vb)
-		case va != vb:
-			fmt.Printf("~ differs    %s\n    A: %s\n    B: %s\n", k, va, vb)
-		default:
-			continue
-		}
-		diffs++
-	}
+	diffs := batchupdate.DiffFlat("A", "B", a, b)
 	if diffs == 0 {
 		fmt.Println("No differences found.")
 	} else {
