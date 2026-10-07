@@ -215,6 +215,8 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `list-pipeline-variables`
 - `list-release-history`
 - `list-release-status`
+- `manage-pipeline-stages`
+- `copy-pipeline-stage`
 - `synchronize-pipelines`
 - `trigger-release`
 - `update-pipeline-agent-job`
@@ -240,6 +242,24 @@ Components are `variables`, `steps`, `jobs`, `stages`, `agent-settings`, `approv
 Nested components match stages and jobs by exact name. Secret values masked by Azure DevOps are
 preserved in targets instead of being copied. Components containing agent settings require the
 reference and targets to be in the same project because Azure DevOps queue IDs are project-specific.
+
+Add, clone, rename, remove, or reorder stages across many pipelines. Stage ranks stay contiguous,
+renames and removals update stages that depend on them (`--rewire` on remove), and any pipeline where
+the result would break dependency order is reported and left untouched:
+
+```console
+a22r manage-pipeline-stages 'Example.Project\TEST' --action add --stage QA --after Dev --dry-run
+a22r manage-pipeline-stages 'Example.Project\TEST' --action clone --stage Prod --new-name Prod-EU
+```
+
+Copy one complete stage (jobs, tasks, variables, conditions, approvals, retention) from a source
+pipeline into the targets. `--on-existing` chooses `skip` (default), `replace`, or `rename`. The source
+must be in the same project as the targets, and masked secret values must be set afterwards:
+
+```console
+a22r copy-pipeline-stage 'Example.Project\TEST' \
+  --source 'Example.Project\GOLDEN\Deploy' --stage Production --on-existing replace --dry-run
+```
 
 Link or unlink shared variable groups by numeric Azure DevOps group ID:
 
