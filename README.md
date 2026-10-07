@@ -213,13 +213,36 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `list-pipeline-variables`
 - `list-release-history`
 - `list-release-status`
+- `synchronize-pipelines`
 - `trigger-release`
 - `update-pipeline-agent-job`
 - `update-pipeline-demands`
 - `update-pipeline-schedule`
 - `update-pipeline-variables`
+- `update-pipeline-variable-groups`
 
 Use `--dry-run` before applying batch changes. Commands that make changes may also require `--yes` (or `-y`) to skip interactive confirmation.
+
+Synchronize selected parts of matching pipelines from a golden reference definition:
+
+```console
+a22r synchronize-pipelines 'Example.Project\TEST' \
+  --reference 'Example.Project\GOLDEN\Deploy' \
+  --components steps,agent-settings \
+  --dry-run
+```
+
+Components are `variables`, `steps`, `jobs`, `stages`, `agent-settings`, `approvals`, or `all`.
+Nested components match stages and jobs by exact name. Secret values masked by Azure DevOps are
+preserved in targets instead of being copied. Components containing agent settings require the
+reference and targets to be in the same project because Azure DevOps queue IDs are project-specific.
+
+Link or unlink shared variable groups by numeric Azure DevOps group ID:
+
+```console
+a22r update-pipeline-variable-groups 'Example.Project\TEST' \
+  --link 12 --unlink 7 --scope pipeline --dry-run
+```
 
 Audit or enforce consistent pipeline policy across a folder:
 

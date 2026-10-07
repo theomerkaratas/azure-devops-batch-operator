@@ -65,6 +65,8 @@ var menuTree = []menuNode{
 		{label: "Pipeline demands", description: "Set, add, remove, or clear demands.", commandID: "update-pipeline-demands"},
 		{label: "Rename or move pipelines", description: "Rename pipelines or move them between folders.", commandID: "rename-or-move-pipelines"},
 		{label: "Replace pipeline content", description: "Regex-replace scripts, step titles, or variables.", commandID: "replace-pipeline-content"},
+		{label: "Synchronize pipelines", description: "Copy selected components from a reference pipeline.", commandID: "synchronize-pipelines"},
+		{label: "Pipeline variable groups", description: "Link or unlink shared variable groups.", commandID: "update-pipeline-variable-groups"},
 		{label: "Enforce pipeline policy", description: "Fix release pipelines to comply with a YAML policy.", commandID: "enforce-pipeline-policy"},
 	}},
 	{label: "Delete", description: "Delete pipelines or exactly named steps.", children: []menuNode{
