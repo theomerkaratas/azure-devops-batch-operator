@@ -43,6 +43,19 @@ func TestCompareMenuGroupsBothCompareCommands(t *testing.T) {
 	}
 }
 
+func TestDeleteMenuGroupsPipelineAndStepDeletion(t *testing.T) {
+	deleteMenu := menuTree[5].children
+	want := []string{"Release pipelines", "Pipeline steps"}
+	if len(deleteMenu) != len(want) {
+		t.Fatalf("Delete submenu has %d entries, want %d", len(deleteMenu), len(want))
+	}
+	for i, label := range want {
+		if deleteMenu[i].label != label {
+			t.Errorf("Delete submenu entry %d = %q, want %q", i, deleteMenu[i].label, label)
+		}
+	}
+}
+
 func TestMenuTreeContainsEveryCommandExactlyOnce(t *testing.T) {
 	seen := map[string]int{}
 	var walk func([]menuNode)

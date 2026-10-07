@@ -198,6 +198,7 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `create-files`
 - `create-powershell-pipeline`
 - `delete-pipelines`
+- `delete-pipeline-steps`
 - `list-pool-members`
 - `list-pools`
 - `list-releases`
@@ -215,6 +216,14 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `update-pipeline-variables`
 
 Use `--dry-run` before applying batch changes. Commands that make changes may also require `--yes` (or `-y`) to skip interactive confirmation.
+
+Delete every step with an exact, case-sensitive title from all release pipelines under a path:
+
+```console
+a22r delete-pipeline-steps 'Example.Project\TEST\CONFIG' \
+  --title 'Obsolete deployment step' \
+  --dry-run
+```
 
 Create a classic release pipeline containing ordered, inline PowerShell tasks:
 

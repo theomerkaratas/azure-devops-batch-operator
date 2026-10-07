@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/textarea"
+	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/azuredevops"
 )
 
@@ -242,6 +242,25 @@ var writeCommandSpecs = []commandSpec{
 				return append(args, "--dry-run"), nil
 			}
 			return append(args, "--yes"), nil
+		},
+	},
+	{
+		id:          "delete-pipeline-steps",
+		description: "Deletes every step whose title matches exactly across release pipelines under a path.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST\CONFIG`, true).
+					withHelp("Folder or single pipeline path whose steps will be searched."),
+				textField("title", "Exact step title", "title is case-sensitive", true).
+					withHelp("Only steps whose complete title matches this value exactly will be deleted."),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				choiceField("level", "PAT level", []string{"read-write", "manage"}, 0).withHelp(levelHelp),
+				boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"], "--title", v["title"]}
+			return writeTail(args, v), nil
 		},
 	},
 	{
