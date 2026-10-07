@@ -1,0 +1,28 @@
+# Pipeline-level variables that must exist with these values.
+required_variables:
+  Environment: production
+  Owner: platform-team
+
+# Pipeline-level variables that must not exist.
+forbidden_variables:
+  - ObsoleteSetting
+
+# Step titles use exact, case-sensitive matching. Missing required steps are audit-only because
+# creating a task safely requires its complete task type, version, inputs, and placement.
+required_step_titles:
+  - Deploy
+forbidden_step_titles:
+  - Deprecated deployment
+
+# Applied to every agent-based job.
+required_agent_pool: ProductionAgents
+required_demands:
+  - Agent.OS -equals Windows_NT
+max_job_timeout_minutes: 60
+require_enabled_steps: true
+
+# Minimum values applied to every stage.
+minimum_stage_retention:
+  days_to_keep: 30
+  releases_to_keep: 3
+  retain_build: true

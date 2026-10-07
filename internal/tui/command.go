@@ -148,6 +148,25 @@ func init() { commandSpecs = append(commandSpecs, writeCommandSpecs...) }
 
 var writeCommandSpecs = []commandSpec{
 	{
+		id:          "enforce-pipeline-policy",
+		description: "Enforces a YAML policy across release pipelines under a path.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST\CONFIG`, true).
+					withHelp("Folder or single pipeline path to enforce the policy against."),
+				textField("policy", "Policy YAML file", "e.g. release-policy.yml", true).
+					withHelp("Local YAML file containing the desired pipeline rules."),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				choiceField("level", "PAT level", []string{"read-write", "manage"}, 0).withHelp(levelHelp),
+				boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"], "--policy", v["policy"]}
+			return writeTail(args, v), nil
+		},
+	},
+	{
 		id:          "create-powershell-pipeline",
 		description: "Creates a classic release pipeline made of ordered PowerShell tasks.",
 		newFields: func() []*field {
@@ -636,6 +655,32 @@ var writeCommandSpecs = []commandSpec{
 func writeLevels() []string { return []string{"read-write", "manage"} }
 
 var commandSpecs = []commandSpec{
+	{
+		id:          "audit-pipeline-policy",
+		description: "Audits release pipelines under a path against a YAML policy.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST\CONFIG`, true).
+					withHelp("Folder or single pipeline path to audit."),
+				textField("policy", "Policy YAML file", "e.g. release-policy.yml", true).
+					withHelp("Local YAML file containing the required pipeline rules."),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				boolField("fail", "Fail when violations exist", false).
+					withHelp("Yes: return a failed command status when violations are found, useful for CI."),
+				choiceField("level", "PAT level", readLevels(), 0).withHelp(levelHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"], "--policy", v["policy"]}
+			if v["filter"] != "" {
+				args = append(args, "--filter", v["filter"])
+			}
+			if v["fail"] == "yes" {
+				args = append(args, "--fail-on-violation")
+			}
+			return append(args, "--level", v["level"]), nil
+		},
+	},
 	{
 		id:          "compare-pipelines",
 		description: "Compares two release pipelines (variables, agent job settings, tasks).",

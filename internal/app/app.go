@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/omerkaratas/azure-devops-go-automations/internal/azuredevops"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/auditpipelinepolicy"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/backuppipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/cancelreleases"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/clonefolder"
@@ -19,6 +20,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/createpowershellpipeline"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/deletepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/deletepipelinesteps"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/enforcepipelinepolicy"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelineagentjob"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelineschedule"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelinesteps"
@@ -46,6 +48,7 @@ const Name = "a22r"
 var version = "dev"
 
 var commands = map[string]func(){
+	"audit-pipeline-policy":      auditpipelinepolicy.Main,
 	"backup-pipelines":           backuppipelines.Main,
 	"restore-pipelines":          restorepipelines.Main,
 	"cancel-releases":            cancelreleases.Main,
@@ -57,6 +60,7 @@ var commands = map[string]func(){
 	"create-powershell-pipeline": createpowershellpipeline.Main,
 	"delete-pipelines":           deletepipelines.Main,
 	"delete-pipeline-steps":      deletepipelinesteps.Main,
+	"enforce-pipeline-policy":    enforcepipelinepolicy.Main,
 	"list-pool-members":          listpoolmembers.Main,
 	"list-pools":                 listpools.Main,
 	"list-releases":              listreleases.Main,

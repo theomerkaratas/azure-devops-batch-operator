@@ -192,6 +192,7 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 
 ## Commands
 
+- `audit-pipeline-policy`
 - `cancel-releases`
 - `clone-pipeline`
 - `clone-folder`
@@ -200,6 +201,7 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `create-powershell-pipeline`
 - `delete-pipelines`
 - `delete-pipeline-steps`
+- `enforce-pipeline-policy`
 - `list-pool-members`
 - `list-pools`
 - `list-releases`
@@ -218,6 +220,22 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `update-pipeline-variables`
 
 Use `--dry-run` before applying batch changes. Commands that make changes may also require `--yes` (or `-y`) to skip interactive confirmation.
+
+Audit or enforce consistent pipeline policy across a folder:
+
+```console
+a22r audit-pipeline-policy 'Example.Project\TEST\CONFIG' \
+  --policy policy.example.yml
+
+a22r enforce-pipeline-policy 'Example.Project\TEST\CONFIG' \
+  --policy policy.example.yml \
+  --dry-run
+```
+
+The policy supports required and forbidden pipeline variables, required and forbidden step
+titles, a required agent pool and demands, maximum job timeout, enabled steps, and minimum stage
+retention. Missing required steps are reported but not automatically created because a title does
+not provide the task type, version, inputs, or safe placement needed to construct one.
 
 Clone a complete release folder tree, including its subfolders and release pipelines:
 
