@@ -51,6 +51,33 @@ func TestReplaceContentHonorsFieldSelection(t *testing.T) {
 	}
 }
 
+func TestReplaceContentDoesNotTreatScriptSourceAsScriptText(t *testing.T) {
+	inputs := map[string]interface{}{"scriptSource": "inline", "inlineScript": "inline"}
+	task := map[string]interface{}{"name": "Task", "inputs": inputs}
+	raw := map[string]interface{}{"environments": []interface{}{map[string]interface{}{
+		"name": "Stage", "deployPhases": []interface{}{map[string]interface{}{"name": "Job", "workflowTasks": []interface{}{task}}},
+	}}}
+
+	changes := replaceContent(raw, regexp.MustCompile("inline"), "changed", targets{scripts: true})
+	if len(changes) != 1 {
+		t.Fatalf("changes = %d, want 1: %#v", len(changes), changes)
+	}
+	if inputs["scriptSource"] != "inline" {
+		t.Fatalf("scriptSource changed to %q", inputs["scriptSource"])
+	}
+	if inputs["inlineScript"] != "changed" {
+		t.Fatalf("inlineScript = %q, want changed", inputs["inlineScript"])
+	}
+}
+
+func TestReplaceStringDoesNotReportNoOpReplacement(t *testing.T) {
+	value := "keep this text"
+	updated, count := replaceString(value, regexp.MustCompile("keep"), "keep")
+	if updated != value || count != 0 {
+		t.Fatalf("replaceString() = (%q, %d), want (%q, 0)", updated, count, value)
+	}
+}
+
 func TestParseTargetsRejectsUnknownField(t *testing.T) {
 	if _, err := parseTargets("scripts,unknown"); err == nil {
 		t.Fatal("expected unknown field error")

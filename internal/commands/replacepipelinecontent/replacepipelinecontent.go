@@ -31,7 +31,7 @@ Arguments:
 `
 
 var scriptInputKeys = map[string]bool{
-	"script": true, "inlineScript": true, "scriptSource": true,
+	"script": true, "inlineScript": true,
 	"powershellScript": true, "inline": true, "contents": true,
 }
 
@@ -191,5 +191,9 @@ func replaceString(value string, re *regexp.Regexp, replacement string) (string,
 	if count == 0 {
 		return value, 0
 	}
-	return re.ReplaceAllString(value, replacement), count
+	updated := re.ReplaceAllString(value, replacement)
+	if updated == value {
+		return value, 0
+	}
+	return updated, count
 }
