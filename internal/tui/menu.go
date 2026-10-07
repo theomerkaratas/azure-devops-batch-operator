@@ -60,6 +60,7 @@ var menuTree = []menuNode{
 		{label: "Pipeline agent job", description: "Update pool and timeout settings.", commandID: "update-pipeline-agent-job"},
 		{label: "Pipeline demands", description: "Set, add, remove, or clear demands.", commandID: "update-pipeline-demands"},
 		{label: "Rename or move pipelines", description: "Rename pipelines or move them between folders.", commandID: "rename-or-move-pipelines"},
+		{label: "Replace pipeline content", description: "Regex-replace scripts, step titles, or variables.", commandID: "replace-pipeline-content"},
 	}},
 	{label: "Delete", description: "Delete pipelines or exactly named steps.", children: []menuNode{
 		{label: "Release pipelines", description: "Permanently delete matching release pipelines.", commandID: "delete-pipelines"},
