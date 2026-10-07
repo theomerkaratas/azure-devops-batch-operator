@@ -20,6 +20,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/createpowershellpipeline"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/deletepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/deletepipelinesteps"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/detectpipelinevariableconflicts"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/enforcepipelinepolicy"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelineagentjob"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelineschedule"
@@ -32,11 +33,14 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listreleasestatus"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/renameormovepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/replacepipelinecontent"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/replacepipelinevariablegroups"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/restorepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/synchronizepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/triggerrelease"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineagentjob"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineapprovals"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinedemands"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinegates"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineschedule"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinevariablegroups"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinevariables"
@@ -50,37 +54,41 @@ const Name = "a22r"
 var version = "dev"
 
 var commands = map[string]func(){
-	"audit-pipeline-policy":           auditpipelinepolicy.Main,
-	"backup-pipelines":                backuppipelines.Main,
-	"restore-pipelines":               restorepipelines.Main,
-	"synchronize-pipelines":           synchronizepipelines.Main,
-	"cancel-releases":                 cancelreleases.Main,
-	"clone-pipeline":                  clonepipeline.Main,
-	"clone-folder":                    clonefolder.Main,
-	"compare-pipelines":               comparepipelines.Main,
-	"compare-folders":                 comparefolders.Main,
-	"create-files":                    createfiles.Main,
-	"create-powershell-pipeline":      createpowershellpipeline.Main,
-	"delete-pipelines":                deletepipelines.Main,
-	"delete-pipeline-steps":           deletepipelinesteps.Main,
-	"enforce-pipeline-policy":         enforcepipelinepolicy.Main,
-	"list-pool-members":               listpoolmembers.Main,
-	"list-pools":                      listpools.Main,
-	"list-releases":                   listreleases.Main,
-	"rename-or-move-pipelines":        renameormovepipelines.Main,
-	"replace-pipeline-content":        replacepipelinecontent.Main,
-	"list-pipeline-agent-job":         listpipelineagentjob.Main,
-	"list-pipeline-schedule":          listpipelineschedule.Main,
-	"list-pipeline-steps":             listpipelinesteps.Main,
-	"list-pipeline-variables":         listpipelinevariables.Main,
-	"list-release-history":            listreleasehistory.Main,
-	"list-release-status":             listreleasestatus.Main,
-	"trigger-release":                 triggerrelease.Main,
-	"update-pipeline-agent-job":       updatepipelineagentjob.Main,
-	"update-pipeline-demands":         updatepipelinedemands.Main,
-	"update-pipeline-schedule":        updatepipelineschedule.Main,
-	"update-pipeline-variables":       updatepipelinevariables.Main,
-	"update-pipeline-variable-groups": updatepipelinevariablegroups.Main,
+	"audit-pipeline-policy":              auditpipelinepolicy.Main,
+	"backup-pipelines":                   backuppipelines.Main,
+	"restore-pipelines":                  restorepipelines.Main,
+	"synchronize-pipelines":              synchronizepipelines.Main,
+	"cancel-releases":                    cancelreleases.Main,
+	"clone-pipeline":                     clonepipeline.Main,
+	"clone-folder":                       clonefolder.Main,
+	"compare-pipelines":                  comparepipelines.Main,
+	"compare-folders":                    comparefolders.Main,
+	"create-files":                       createfiles.Main,
+	"create-powershell-pipeline":         createpowershellpipeline.Main,
+	"delete-pipelines":                   deletepipelines.Main,
+	"delete-pipeline-steps":              deletepipelinesteps.Main,
+	"detect-pipeline-variable-conflicts": detectpipelinevariableconflicts.Main,
+	"enforce-pipeline-policy":            enforcepipelinepolicy.Main,
+	"list-pool-members":                  listpoolmembers.Main,
+	"list-pools":                         listpools.Main,
+	"list-releases":                      listreleases.Main,
+	"rename-or-move-pipelines":           renameormovepipelines.Main,
+	"replace-pipeline-content":           replacepipelinecontent.Main,
+	"list-pipeline-agent-job":            listpipelineagentjob.Main,
+	"list-pipeline-schedule":             listpipelineschedule.Main,
+	"list-pipeline-steps":                listpipelinesteps.Main,
+	"list-pipeline-variables":            listpipelinevariables.Main,
+	"list-release-history":               listreleasehistory.Main,
+	"list-release-status":                listreleasestatus.Main,
+	"trigger-release":                    triggerrelease.Main,
+	"update-pipeline-agent-job":          updatepipelineagentjob.Main,
+	"update-pipeline-approvals":          updatepipelineapprovals.Main,
+	"update-pipeline-demands":            updatepipelinedemands.Main,
+	"update-pipeline-gates":              updatepipelinegates.Main,
+	"update-pipeline-schedule":           updatepipelineschedule.Main,
+	"update-pipeline-variables":          updatepipelinevariables.Main,
+	"update-pipeline-variable-groups":    updatepipelinevariablegroups.Main,
+	"replace-pipeline-variable-groups":   replacepipelinevariablegroups.Main,
 }
 
 // Main dispatches on os.Args and never returns normally for a command (commands call os.Exit).
