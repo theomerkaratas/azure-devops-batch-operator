@@ -150,6 +150,56 @@ func init() { commandSpecs = append(commandSpecs, writeCommandSpecs...) }
 
 var writeCommandSpecs = []commandSpec{
 	{
+		id: "update-pipeline-stage-triggers", description: "Changes when stages start: after release, after stages, or manually.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true),
+				choiceField("trigger", "Trigger", []string{"sequential", "after-release", "after-stages", "manual"}, 0).withHelp("sequential: each stage follows the previous one. after-stages: wait for the stages in 'After stages'."),
+				textField("stage", "Stages to change (comma-separated, optional)", "e.g. Prod,QA", false).withHelp("Leave empty to change every stage."),
+				textField("after", "After stages (comma-separated)", "e.g. QA,Perf", false).withHelp("Only for the after-stages trigger."),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				choiceField("level", "PAT level", []string{"read-write", "manage"}, 0).withHelp(levelHelp), boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"], "--trigger", v["trigger"]}
+			if v["stage"] != "" {
+				args = append(args, "--stage", v["stage"])
+			}
+			if v["after"] != "" {
+				args = append(args, "--after", v["after"])
+			}
+			return writeTail(args, v), nil
+		},
+	},
+	{
+		id: "update-pipeline-artifacts", description: "Replaces build artifact sources, branches, projects, or aliases.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true),
+				textField("match_alias", "Match alias (optional)", "e.g. _OldBuild", false), textField("match_definition", "Match build pipeline (optional)", "e.g. OldBuild", false),
+				textField("match_project", "Match project (optional)", "e.g. Example.Project", false), textField("match_branch", "Match branch (optional)", "e.g. refs/heads/main", false),
+				textField("set_definition", "New build pipeline (optional)", "e.g. NewBuild", false), textField("set_project", "New project (optional)", "e.g. Other.Project", false),
+				textField("set_branch", "New default branch (optional)", "e.g. refs/heads/release", false), textField("set_alias", "New alias (optional)", "e.g. _NewBuild", false),
+				boolField("rewrite", "Rewrite alias references in stages/steps", false),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				choiceField("level", "PAT level", []string{"read-write", "manage"}, 0).withHelp(levelHelp), boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"]}
+			for _, opt := range [][2]string{{"--match-alias", "match_alias"}, {"--match-definition", "match_definition"}, {"--match-project", "match_project"}, {"--match-branch", "match_branch"}, {"--set-definition", "set_definition"}, {"--set-project", "set_project"}, {"--set-branch", "set_branch"}, {"--set-alias", "set_alias"}} {
+				if v[opt[1]] != "" {
+					args = append(args, opt[0], v[opt[1]])
+				}
+			}
+			if v["rewrite"] == "yes" {
+				args = append(args, "--rewrite-references")
+			}
+			return writeTail(args, v), nil
+		},
+	},
+	{
 		id: "manage-pipeline-stages", description: "Adds, clones, renames, removes, or reorders stages across release pipelines.",
 		newFields: func() []*field {
 			return []*field{
