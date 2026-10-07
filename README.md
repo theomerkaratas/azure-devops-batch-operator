@@ -201,12 +201,14 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `create-powershell-pipeline`
 - `delete-pipelines`
 - `delete-pipeline-steps`
+- `detect-pipeline-variable-conflicts`
 - `enforce-pipeline-policy`
 - `list-pool-members`
 - `list-pools`
 - `list-releases`
 - `rename-or-move-pipelines`
 - `replace-pipeline-content`
+- `replace-pipeline-variable-groups`
 - `list-pipeline-agent-job`
 - `list-pipeline-schedule`
 - `list-pipeline-steps`
@@ -216,7 +218,9 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `synchronize-pipelines`
 - `trigger-release`
 - `update-pipeline-agent-job`
+- `update-pipeline-approvals`
 - `update-pipeline-demands`
+- `update-pipeline-gates`
 - `update-pipeline-schedule`
 - `update-pipeline-variables`
 - `update-pipeline-variable-groups`
@@ -242,6 +246,41 @@ Link or unlink shared variable groups by numeric Azure DevOps group ID:
 ```console
 a22r update-pipeline-variable-groups 'Example.Project\TEST' \
   --link 12 --unlink 7 --scope pipeline --dry-run
+```
+
+Replace an old variable-group reference with a new one across every pipeline in a folder (useful
+for migrations, environment separation, or variable-group restructuring):
+
+```console
+a22r replace-pipeline-variable-groups 'Example.Project\TEST' \
+  --map 12:34 --scope all --dry-run
+```
+
+Detect duplicate or conflicting variable names across pipeline variables, stage variables, and
+linked variable groups, and see which value takes precedence:
+
+```console
+a22r detect-pipeline-variable-conflicts 'Example.Project\TEST'
+```
+
+Bulk-update pre/post-deployment approvers and approval policies (identity ids, not names, since
+Azure DevOps approvals reference approvers by id; look an id up in the pipeline's Approvals UI or
+via the Graph API). `--clear` combined with `--add` replaces the approver list outright:
+
+```console
+a22r update-pipeline-approvals 'Example.Project\TEST' \
+  --phase pre --add 'a1b2c3d4-...:Jane Doe' --creator-can-approve=false \
+  --timeout 1440 --stage Production --dry-run
+```
+
+Standardize pre/post-deployment gates (REST API checks, Azure Function checks, monitoring
+queries, evaluation intervals, timeout behavior) across a folder by copying them verbatim from a
+reference pipeline's name-matched stages:
+
+```console
+a22r update-pipeline-gates 'Example.Project\TEST' \
+  --reference 'Example.Project\GOLDEN\Deploy' \
+  --phase post --dry-run
 ```
 
 Audit or enforce consistent pipeline policy across a folder:
