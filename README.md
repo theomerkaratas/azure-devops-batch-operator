@@ -194,6 +194,7 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 
 - `cancel-releases`
 - `clone-pipeline`
+- `clone-folder`
 - `compare-pipelines`
 - `create-files`
 - `create-powershell-pipeline`
@@ -217,6 +218,14 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `update-pipeline-variables`
 
 Use `--dry-run` before applying batch changes. Commands that make changes may also require `--yes` (or `-y`) to skip interactive confirmation.
+
+Clone a complete release folder tree, including its subfolders and release pipelines:
+
+```console
+a22r clone-folder 'Example.Project\DEV\CONFIG' \
+  'Example.Project\TEST\CONFIG' \
+  --dry-run
+```
 
 Delete every step with an exact, case-sensitive title from all release pipelines under a path:
 

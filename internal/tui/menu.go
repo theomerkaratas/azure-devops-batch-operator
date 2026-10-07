@@ -36,7 +36,10 @@ var menuTree = []menuNode{
 		{label: "Trigger release", description: "Create releases for matching pipelines.", commandID: "trigger-release"},
 		{label: "Create files", description: "Create empty local files and folders.", commandID: "create-files"},
 	}},
-	{label: "Clone", description: "Copy an existing release pipeline.", commandID: "clone-pipeline"},
+	{label: "Clone", description: "Copy a release pipeline or an entire folder tree.", children: []menuNode{
+		{label: "Pipeline", description: "Copy one existing release pipeline.", commandID: "clone-pipeline"},
+		{label: "Folder", description: "Copy a folder, its subfolders, and all release pipelines.", commandID: "clone-folder"},
+	}},
 	{label: "Read", description: "Inspect and compare Azure DevOps resources.", children: []menuNode{
 		{label: "List", description: "List pipelines, releases, agent pools, and configuration.", children: []menuNode{
 			{label: "Release pipelines", description: "List pipeline folders and definitions.", commandID: "list-releases"},

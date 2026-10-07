@@ -17,10 +17,27 @@ type releaseDefinitionsResponse struct {
 	Value []ReleaseDefinition `json:"value"`
 }
 
+// ReleaseFolder is a folder in the classic release pipeline hierarchy.
+type ReleaseFolder struct {
+	Path string `json:"path"`
+}
+
 // ListReleaseDefinitions fetches all release definitions for a project.
 func (c Config) ListReleaseDefinitions(project string) ([]ReleaseDefinition, error) {
 	url := fmt.Sprintf("%s/_apis/release/definitions?api-version=%s", c.releaseProjectBaseURL(project), c.apiVersion())
 	var resp releaseDefinitionsResponse
+	if err := c.Get(url, &resp); err != nil {
+		return nil, err
+	}
+	return resp.Value, nil
+}
+
+// ListReleaseFolders fetches all classic release pipeline folders in a project.
+func (c Config) ListReleaseFolders(project string) ([]ReleaseFolder, error) {
+	url := fmt.Sprintf("%s/_apis/release/folders?api-version=%s", c.releaseProjectBaseURL(project), c.apiVersion())
+	var resp struct {
+		Value []ReleaseFolder `json:"value"`
+	}
 	if err := c.Get(url, &resp); err != nil {
 		return nil, err
 	}

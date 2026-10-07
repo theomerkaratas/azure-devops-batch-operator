@@ -81,6 +81,31 @@ func TestDeleteDefinitionUsesReleaseEndpoint(t *testing.T) {
 	}
 }
 
+func TestListReleaseFoldersUsesReleaseEndpoint(t *testing.T) {
+	cfg := Config{
+		Deployment: DeploymentCloud,
+		OrgURL:     "https://dev.azure.com/example",
+		ReleaseURL: "https://vsrm.dev.azure.com/example",
+	}
+	var requestURL string
+	stubHTTPClient(t, func(r *http.Request) (*http.Response, error) {
+		requestURL = r.URL.String()
+		return response(http.StatusOK, `{"value":[{"path":"\\DEV"}]}`), nil
+	})
+
+	folders, err := cfg.ListReleaseFolders("My Project")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(folders) != 1 || folders[0].Path != `\DEV` {
+		t.Fatalf("folders = %#v", folders)
+	}
+	want := "https://vsrm.dev.azure.com/example/My%20Project/_apis/release/folders?api-version=7.1"
+	if requestURL != want {
+		t.Fatalf("request URL = %q, want %q", requestURL, want)
+	}
+}
+
 func TestResolveQueueIDUsesProjectQueueEndpoint(t *testing.T) {
 	cfg := Config{
 		Deployment: DeploymentCloud,
