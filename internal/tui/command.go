@@ -60,6 +60,7 @@ var pickModes = map[string]pickMode{
 	"folder_a":           pickAny,
 	"folder_b":           pickAny,
 	"source":             pickPipeline,
+	"reference":          pickPipeline,
 	"destination":        pickNewPipeline,
 	"source_folder":      pickProjectFolder,
 	"destination_folder": pickNewFolder,
@@ -147,6 +148,53 @@ func writeTail(args []string, v map[string]string) []string {
 func init() { commandSpecs = append(commandSpecs, writeCommandSpecs...) }
 
 var writeCommandSpecs = []commandSpec{
+	{
+		id: "synchronize-pipelines", description: "Copies selected components from a reference release pipeline into matching pipelines.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true).withHelp("Pipelines that receive the reference components."),
+				textField("reference", "Reference pipeline", `e.g. Example.Project\GOLDEN\Deploy`, true).withHelp("Golden pipeline used as the source of truth."),
+				textField("components", "Components (comma-separated)", "steps,agent-settings", true).withHelp("variables, steps, jobs, stages, agent-settings, approvals, or all."),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				choiceField("level", "PAT level", []string{"read-write", "manage"}, 0).withHelp(levelHelp), boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			return writeTail([]string{v["target"], "--reference", v["reference"], "--components", v["components"]}, v), nil
+		},
+	},
+	{
+		id: "update-pipeline-variable-groups", description: "Links or unlinks shared variable groups across release pipelines.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true), textField("links", "Group IDs to link (;-separated)", "e.g. 12;18", false), textField("unlinks", "Group IDs to unlink (;-separated)", "e.g. 7", false),
+				choiceField("scope", "Scope", []string{"pipeline", "stage", "all"}, 0), textField("stage", "Stage name (optional)", "e.g. Production", false), textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				choiceField("level", "PAT level", []string{"read-write", "manage"}, 0).withHelp(levelHelp), boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			if len(splitList(v["links"])) == 0 && len(splitList(v["unlinks"])) == 0 {
+				return nil, fmt.Errorf("specify at least one group ID to link or unlink")
+			}
+			args := []string{v["target"], "--scope", v["scope"]}
+			for _, id := range splitList(v["links"]) {
+				if n, err := strconv.Atoi(id); err != nil || n <= 0 {
+					return nil, fmt.Errorf("invalid variable-group ID %q", id)
+				}
+				args = append(args, "--link", id)
+			}
+			for _, id := range splitList(v["unlinks"]) {
+				if n, err := strconv.Atoi(id); err != nil || n <= 0 {
+					return nil, fmt.Errorf("invalid variable-group ID %q", id)
+				}
+				args = append(args, "--unlink", id)
+			}
+			if v["stage"] != "" {
+				args = append(args, "--stage", v["stage"])
+			}
+			return writeTail(args, v), nil
+		},
+	},
 	{
 		id:          "enforce-pipeline-policy",
 		description: "Enforces a YAML policy across release pipelines under a path.",
