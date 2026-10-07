@@ -52,6 +52,7 @@ var menuTree = []menuNode{
 			{label: "Release history", description: "List recent releases and stage statuses.", commandID: "list-release-history"},
 			{label: "Release status", description: "List latest status across pipelines.", commandID: "list-release-status"},
 		}},
+		{label: "Policy audit", description: "Audit release pipelines against a YAML policy.", commandID: "audit-pipeline-policy"},
 	}},
 	{label: "Compare", description: "Compare pipelines or whole folders.", children: []menuNode{
 		{label: "Compare pipelines", description: "Compare variables, jobs, and tasks between two pipelines.", commandID: "compare-pipelines"},
@@ -64,6 +65,7 @@ var menuTree = []menuNode{
 		{label: "Pipeline demands", description: "Set, add, remove, or clear demands.", commandID: "update-pipeline-demands"},
 		{label: "Rename or move pipelines", description: "Rename pipelines or move them between folders.", commandID: "rename-or-move-pipelines"},
 		{label: "Replace pipeline content", description: "Regex-replace scripts, step titles, or variables.", commandID: "replace-pipeline-content"},
+		{label: "Enforce pipeline policy", description: "Fix release pipelines to comply with a YAML policy.", commandID: "enforce-pipeline-policy"},
 	}},
 	{label: "Delete", description: "Delete pipelines or exactly named steps.", children: []menuNode{
 		{label: "Release pipelines", description: "Permanently delete matching release pipelines.", commandID: "delete-pipelines"},
