@@ -61,7 +61,10 @@ var menuTree = []menuNode{
 		{label: "Pipeline demands", description: "Set, add, remove, or clear demands.", commandID: "update-pipeline-demands"},
 		{label: "Rename or move pipelines", description: "Rename pipelines or move them between folders.", commandID: "rename-or-move-pipelines"},
 	}},
-	{label: "Delete", description: "Permanently delete matching release pipelines.", commandID: "delete-pipelines"},
+	{label: "Delete", description: "Delete pipelines or exactly named steps.", children: []menuNode{
+		{label: "Release pipelines", description: "Permanently delete matching release pipelines.", commandID: "delete-pipelines"},
+		{label: "Pipeline steps", description: "Delete exactly named steps from matching release pipelines.", commandID: "delete-pipeline-steps"},
+	}},
 	{label: "Cancel", description: "Cancel deployments and optionally abandon releases.", commandID: "cancel-releases"},
 	{label: "Backup", description: "Back up or restore release pipeline definitions.", children: []menuNode{
 		{label: "Back up pipelines", description: "Save matching pipelines' definitions to local JSON files.", commandID: "backup-pipelines"},

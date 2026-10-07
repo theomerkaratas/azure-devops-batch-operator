@@ -17,6 +17,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/createfiles"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/createpowershellpipeline"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/deletepipelines"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/deletepipelinesteps"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelineagentjob"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelineschedule"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelinesteps"
@@ -52,6 +53,7 @@ var commands = map[string]func(){
 	"create-files":               createfiles.Main,
 	"create-powershell-pipeline": createpowershellpipeline.Main,
 	"delete-pipelines":           deletepipelines.Main,
+	"delete-pipeline-steps":      deletepipelinesteps.Main,
 	"list-pool-members":          listpoolmembers.Main,
 	"list-pools":                 listpools.Main,
 	"list-releases":              listreleases.Main,
