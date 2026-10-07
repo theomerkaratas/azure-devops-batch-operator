@@ -61,6 +61,7 @@ var pickModes = map[string]pickMode{
 	"folder_b":           pickAny,
 	"source":             pickPipeline,
 	"reference":          pickPipeline,
+	"source_pipeline":    pickPipeline,
 	"destination":        pickNewPipeline,
 	"source_folder":      pickProjectFolder,
 	"destination_folder": pickNewFolder,
@@ -148,6 +149,60 @@ func writeTail(args []string, v map[string]string) []string {
 func init() { commandSpecs = append(commandSpecs, writeCommandSpecs...) }
 
 var writeCommandSpecs = []commandSpec{
+	{
+		id: "manage-pipeline-stages", description: "Adds, clones, renames, removes, or reorders stages across release pipelines.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true),
+				choiceField("action", "Action", []string{"add", "clone", "rename", "remove", "reorder"}, 0).withHelp("add: empty stage. clone: duplicate --stage. rename: rename and update dependents. remove: delete (rewire fixes dependents). reorder: move."),
+				textField("stage", "Stage name", "e.g. QA", true).withHelp("The stage to add, clone, rename, remove, or move."),
+				textField("new_name", "New name (clone/rename)", "e.g. Staging", false),
+				textField("after", "Place after stage (optional)", "e.g. Dev", false).withHelp("Used by add, clone and reorder. Leave empty for the default placement."),
+				textField("position", "Position (optional, 1-based)", "e.g. 1", false).withHelp("Alternative to 'place after'."),
+				textField("depends_on", "Depends on (comma-separated, optional)", "e.g. Dev,QA", false),
+				boolField("rewire", "Rewire dependents on remove", false),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				choiceField("level", "PAT level", []string{"read-write", "manage"}, 0).withHelp(levelHelp), boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"], "--action", v["action"], "--stage", v["stage"]}
+			for _, opt := range [][2]string{{"--new-name", "new_name"}, {"--after", "after"}, {"--position", "position"}, {"--depends-on", "depends_on"}} {
+				if v[opt[1]] != "" {
+					args = append(args, opt[0], v[opt[1]])
+				}
+			}
+			if v["rewire"] == "yes" {
+				args = append(args, "--rewire")
+			}
+			return writeTail(args, v), nil
+		},
+	},
+	{
+		id: "copy-pipeline-stage", description: "Copies one complete stage from a source pipeline into target pipelines.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true),
+				textField("source_pipeline", "Source pipeline", `e.g. Example.Project\GOLDEN\Deploy`, true).withHelp("Pipeline that holds the stage to copy."),
+				textField("stage", "Stage name", "e.g. Production", true),
+				choiceField("on_existing", "If the stage already exists", []string{"skip", "replace", "rename"}, 0),
+				textField("new_name", "New name (rename/optional)", "e.g. Production-copy", false),
+				textField("after", "Place after stage (optional)", "e.g. Dev", false),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				choiceField("level", "PAT level", []string{"read-write", "manage"}, 0).withHelp(levelHelp), boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"], "--source", v["source_pipeline"], "--stage", v["stage"], "--on-existing", v["on_existing"]}
+			if v["new_name"] != "" {
+				args = append(args, "--new-name", v["new_name"])
+			}
+			if v["after"] != "" {
+				args = append(args, "--after", v["after"])
+			}
+			return writeTail(args, v), nil
+		},
+	},
 	{
 		id: "synchronize-pipelines", description: "Copies selected components from a reference release pipeline into matching pipelines.",
 		newFields: func() []*field {

@@ -16,6 +16,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/clonepipeline"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/comparefolders"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/comparepipelines"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/copypipelinestage"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/createfiles"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/createpowershellpipeline"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/deletepipelines"
@@ -31,6 +32,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listreleasehistory"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listreleases"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listreleasestatus"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/managepipelinestages"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/renameormovepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/replacepipelinecontent"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/replacepipelinevariablegroups"
@@ -63,6 +65,8 @@ var commands = map[string]func(){
 	"clone-folder":                       clonefolder.Main,
 	"compare-pipelines":                  comparepipelines.Main,
 	"compare-folders":                    comparefolders.Main,
+	"copy-pipeline-stage":                copypipelinestage.Main,
+	"manage-pipeline-stages":             managepipelinestages.Main,
 	"create-files":                       createfiles.Main,
 	"create-powershell-pipeline":         createpowershellpipeline.Main,
 	"delete-pipelines":                   deletepipelines.Main,
