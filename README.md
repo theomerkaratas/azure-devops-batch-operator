@@ -203,6 +203,7 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `list-pools`
 - `list-releases`
 - `rename-or-move-pipelines`
+- `replace-pipeline-content`
 - `list-pipeline-agent-job`
 - `list-pipeline-schedule`
 - `list-pipeline-steps`
@@ -222,6 +223,16 @@ Delete every step with an exact, case-sensitive title from all release pipelines
 ```console
 a22r delete-pipeline-steps 'Example.Project\TEST\CONFIG' \
   --title 'Obsolete deployment step' \
+  --dry-run
+```
+
+Regex-replace repeating content in scripts, step titles, and/or variable values:
+
+```console
+a22r replace-pipeline-content 'Example.Project\TEST\CONFIG' \
+  --find 'Service-(\w+)' \
+  --replace 'App-$1' \
+  --fields scripts,titles,variables \
   --dry-run
 ```
 

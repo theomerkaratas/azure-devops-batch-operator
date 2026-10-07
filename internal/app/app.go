@@ -28,6 +28,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listreleases"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listreleasestatus"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/renameormovepipelines"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/replacepipelinecontent"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/restorepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/triggerrelease"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineagentjob"
@@ -58,6 +59,7 @@ var commands = map[string]func(){
 	"list-pools":                 listpools.Main,
 	"list-releases":              listreleases.Main,
 	"rename-or-move-pipelines":   renameormovepipelines.Main,
+	"replace-pipeline-content":   replacepipelinecontent.Main,
 	"list-pipeline-agent-job":    listpipelineagentjob.Main,
 	"list-pipeline-schedule":     listpipelineschedule.Main,
 	"list-pipeline-steps":        listpipelinesteps.Main,

@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -438,6 +439,36 @@ var writeCommandSpecs = []commandSpec{
 			if v["stage"] != "" {
 				args = append(args, "--stage", v["stage"])
 			}
+			return writeTail(args, v), nil
+		},
+	},
+	{
+		id:          "replace-pipeline-content",
+		description: "Regex-replaces matching content in scripts, step titles, and variables under a path.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST\CONFIG`, true).
+					withHelp("Folder or single pipeline path whose definitions will be searched."),
+				textField("find", "Find (regular expression)", `e.g. Service-(\w+)`, true).
+					withHelp("Go regular expression to search for in the selected fields."),
+				textField("replace", "Replace with", `e.g. App-$1 (empty deletes)`, false).
+					withHelp("Replacement text; capture groups such as $1 and ${name} are supported."),
+				textField("fields", "Fields (comma-separated)", "default: scripts,titles,variables", false).
+					withHelp("Select one or more of: scripts, titles, variables, or all. Empty selects all three."),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				choiceField("level", "PAT level", []string{"read-write", "manage"}, 0).withHelp(levelHelp),
+				boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			if _, err := regexp.Compile(v["find"]); err != nil {
+				return nil, fmt.Errorf("invalid find regular expression: %w", err)
+			}
+			fields := v["fields"]
+			if fields == "" {
+				fields = "scripts,titles,variables"
+			}
+			args := []string{v["target"], "--find", v["find"], "--replace", v["replace"], "--fields", fields}
 			return writeTail(args, v), nil
 		},
 	},
