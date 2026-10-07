@@ -197,9 +197,11 @@ func groupContributions(ids []int, groups map[int]azuredevops.VariableGroup) []s
 	for _, id := range ids {
 		group, ok := groups[id]
 		groupName := fmt.Sprintf("Group %d", id)
-		if ok {
-			groupName = group.Name
+		if !ok {
+			fmt.Fprintf(os.Stderr, "Warning: variable group %d is linked but not visible to this PAT/project; its variables were not checked for conflicts.\n", id)
+			continue
 		}
+		groupName = group.Name
 		names := make([]string, 0, len(group.Variables))
 		for n := range group.Variables {
 			names = append(names, n)

@@ -187,16 +187,24 @@ func apply(raw map[string]interface{}, stage string, phases []string, adds []app
 	batchupdate.EachEnvironment(raw, stage, func(name string, env map[string]interface{}) {
 		for _, phase := range phases {
 			key := phaseKeys[phase]
-			block, _ := env[key].(map[string]interface{})
+			existing, _ := env[key].(map[string]interface{})
+			block := existing
 			if block == nil {
 				block = map[string]interface{}{}
-				env[key] = block
 			}
 			label := fmt.Sprintf("[stage %s / %s]", name, phase)
-			if line := updateApprovers(block, label, adds, removes, clearAll); line != "" {
+			line := updateApprovers(block, label, adds, removes, clearAll)
+			policyLines := updatePolicy(block, label, settings)
+			if line == "" && len(policyLines) == 0 {
+				continue
+			}
+			if line != "" {
 				changes = append(changes, line)
 			}
-			changes = append(changes, updatePolicy(block, label, settings)...)
+			changes = append(changes, policyLines...)
+			if existing == nil {
+				env[key] = block
+			}
 		}
 	})
 	sort.Strings(changes)

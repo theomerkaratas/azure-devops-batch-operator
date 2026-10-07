@@ -125,17 +125,16 @@ func apply(raw map[string]interface{}, scope, stage string, maps []mapping) []st
 func replace(owner map[string]interface{}, label string, maps []mapping) string {
 	current := groupIDs(owner["variableGroups"])
 	wanted := append([]int(nil), current...)
-	changed := false
 	for i, id := range wanted {
 		for _, m := range maps {
 			if id == m.from {
 				wanted[i] = m.to
-				changed = true
 				break
 			}
 		}
 	}
-	if !changed {
+	wanted = dedupe(wanted)
+	if equal(current, wanted) {
 		return ""
 	}
 	values := make([]interface{}, len(wanted))
@@ -162,4 +161,31 @@ func groupIDs(value interface{}) []int {
 		}
 	}
 	return out
+}
+
+// dedupe drops repeated IDs, keeping the first occurrence, so mapping two old groups onto the
+// same new one (e.g. --map 5:9 --map 6:9) doesn't link that group twice.
+func dedupe(ids []int) []int {
+	out := make([]int, 0, len(ids))
+	seen := make(map[int]bool, len(ids))
+	for _, id := range ids {
+		if seen[id] {
+			continue
+		}
+		seen[id] = true
+		out = append(out, id)
+	}
+	return out
+}
+
+func equal(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
 }

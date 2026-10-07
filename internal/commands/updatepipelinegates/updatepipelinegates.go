@@ -135,7 +135,11 @@ func standardize(raw map[string]interface{}, stageFilter string, phases []string
 		}
 		for _, phase := range phases {
 			key := phaseKeys[phase]
-			wanted := clone(refStage[key])
+			refValue, ok := refStage[key]
+			if !ok {
+				continue
+			}
+			wanted := clone(refValue)
 			if !reflect.DeepEqual(env[key], wanted) {
 				env[key] = wanted
 				changes = append(changes, fmt.Sprintf("[stage %s / %s] gates standardized", name, phase))
