@@ -53,15 +53,17 @@ func textareaField(key, label, placeholder string, height int, required bool) *f
 
 // pickModes marks which form field keys are Azure DevOps paths and what the picker accepts.
 var pickModes = map[string]pickMode{
-	"target":        pickAny,
-	"pipeline_path": pickPipeline,
-	"pipeline_a":    pickPipeline,
-	"pipeline_b":    pickPipeline,
-	"folder_a":      pickAny,
-	"folder_b":      pickAny,
-	"source":        pickPipeline,
-	"destination":   pickNewPipeline,
-	"move_to":       pickFolder,
+	"target":             pickAny,
+	"pipeline_path":      pickPipeline,
+	"pipeline_a":         pickPipeline,
+	"pipeline_b":         pickPipeline,
+	"folder_a":           pickAny,
+	"folder_b":           pickAny,
+	"source":             pickPipeline,
+	"destination":        pickNewPipeline,
+	"source_folder":      pickProjectFolder,
+	"destination_folder": pickNewFolder,
+	"move_to":            pickFolder,
 }
 
 func textField(key, label, placeholder string, required bool) *field {
@@ -320,6 +322,27 @@ var writeCommandSpecs = []commandSpec{
 		},
 		buildArgs: func(v map[string]string) ([]string, error) {
 			args := []string{v["source"], v["destination"], "--level", v["level"]}
+			if v["dry_run"] == "yes" {
+				return append(args, "--dry-run"), nil
+			}
+			return append(args, "--yes"), nil
+		},
+	},
+	{
+		id:          "clone-folder",
+		description: "Copies a release folder tree and every release pipeline beneath it.",
+		newFields: func() []*field {
+			return []*field{
+				textField("source_folder", "Source folder path", `e.g. Example.Project\DEV\CONFIG`, true).
+					withHelp("Existing folder to copy, including all subfolders and release pipelines."),
+				textField("destination_folder", "New folder path", `e.g. Example.Project\TEST\CONFIG`, true).
+					withHelp("New destination folder in the same project; it must not already exist."),
+				choiceField("level", "PAT level", []string{"read-write", "manage"}, 0).withHelp(levelHelp),
+				boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["source_folder"], v["destination_folder"], "--level", v["level"]}
 			if v["dry_run"] == "yes" {
 				return append(args, "--dry-run"), nil
 			}

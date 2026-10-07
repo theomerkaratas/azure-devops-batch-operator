@@ -43,6 +43,19 @@ func TestCompareMenuGroupsBothCompareCommands(t *testing.T) {
 	}
 }
 
+func TestCloneMenuGroupsPipelineAndFolderCloning(t *testing.T) {
+	cloneMenu := menuTree[1].children
+	want := []string{"Pipeline", "Folder"}
+	if len(cloneMenu) != len(want) {
+		t.Fatalf("Clone submenu has %d entries, want %d", len(cloneMenu), len(want))
+	}
+	for i, label := range want {
+		if cloneMenu[i].label != label {
+			t.Errorf("Clone submenu entry %d = %q, want %q", i, cloneMenu[i].label, label)
+		}
+	}
+}
+
 func TestDeleteMenuGroupsPipelineAndStepDeletion(t *testing.T) {
 	deleteMenu := menuTree[5].children
 	want := []string{"Release pipelines", "Pipeline steps"}

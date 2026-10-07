@@ -13,11 +13,13 @@ import (
 type pickMode int
 
 const (
-	pickNone        pickMode = iota
-	pickAny                  // project, folder or pipeline: Project[\Folder[\Pipeline]]
-	pickPipeline             // a pipeline only: Project\Folder\Pipeline
-	pickNewPipeline          // a folder to put a new pipeline in; result ends with '\' for the name
-	pickFolder               // a folder without the project name: \Folder\Sub (or \ for the root)
+	pickNone          pickMode = iota
+	pickAny                    // project, folder or pipeline: Project[\Folder[\Pipeline]]
+	pickPipeline               // a pipeline only: Project\Folder\Pipeline
+	pickNewPipeline            // a folder to put a new pipeline in; result ends with '\' for the name
+	pickFolder                 // a folder without the project name: \Folder\Sub (or \ for the root)
+	pickProjectFolder          // an existing folder including the project name
+	pickNewFolder              // an existing parent folder, with a trailing slash for a new folder name
 )
 
 type itemKind int
@@ -160,9 +162,11 @@ func (p *picker) selectValue(project, folder, name string, kind itemKind) (strin
 		return full + `\` + name, p.mode == pickAny || p.mode == pickPipeline
 	}
 	switch p.mode {
-	case pickAny:
+	case pickAny, pickProjectFolder:
 		return full, true
 	case pickNewPipeline:
+		return full + `\`, true
+	case pickNewFolder:
 		return full + `\`, true
 	case pickFolder:
 		return folder, true
