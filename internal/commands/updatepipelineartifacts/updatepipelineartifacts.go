@@ -218,6 +218,15 @@ func apply(raw obj, o options, find finder) ([]string, error) {
 		}
 		seen[alias] = true
 	}
+	if n := renameTriggerAliases(raw["triggers"], func() map[string]string {
+		m := map[string]string{}
+		for _, r := range renames {
+			m[strings.ToLower(r.from)] = r.to
+		}
+		return m
+	}()); n > 0 {
+		lines = append(lines, fmt.Sprintf("[triggers] updated artifactAlias on %d trigger(s)", n))
+	}
 	if o.rewrite {
 		for _, r := range renames {
 			if n := rewriteReferences(raw["environments"], r.from, r.to); n > 0 {
@@ -226,6 +235,21 @@ func apply(raw obj, o options, find finder) ([]string, error) {
 		}
 	}
 	return lines, nil
+}
+
+// renameTriggerAliases updates artifactAlias on release triggers using a lower-case old alias -> new alias map.
+func renameTriggerAliases(triggers interface{}, renames map[string]string) int {
+	count := 0
+	items, _ := triggers.([]interface{})
+	for _, item := range items {
+		t, _ := item.(obj)
+		alias, _ := t["artifactAlias"].(string)
+		if to, ok := renames[strings.ToLower(alias)]; ok && to != alias {
+			t["artifactAlias"] = to
+			count++
+		}
+	}
+	return count
 }
 
 func firstNonEmpty(values ...string) string {

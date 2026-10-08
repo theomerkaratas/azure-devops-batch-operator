@@ -43,3 +43,15 @@ func TestValidateOptions(t *testing.T) {
 		t.Fatal("matcher and setter are required")
 	}
 }
+
+func TestAliasRenameUpdatesTriggersWithoutRewrite(t *testing.T) {
+	r := raw()
+	r["triggers"] = []interface{}{obj{"triggerType": "artifactSource", "artifactAlias": "_Old"}, obj{"triggerType": "artifactSource", "artifactAlias": "_Other"}}
+	if _, err := apply(r, options{matchAlias: "_Old", setAlias: "_New"}, fake); err != nil {
+		t.Fatal(err)
+	}
+	triggers := r["triggers"].([]interface{})
+	if triggers[0].(obj)["artifactAlias"] != "_New" || triggers[1].(obj)["artifactAlias"] != "_Other" {
+		t.Fatalf("%v", triggers)
+	}
+}
