@@ -17,21 +17,19 @@ type BuildDefinitionRef struct {
 // FindBuildDefinition looks up a build pipeline by exact name (case-insensitive) in a project.
 func (c Config) FindBuildDefinition(project, name string) (BuildDefinitionRef, error) {
 	u := fmt.Sprintf("%s/_apis/build/definitions?name=%s&api-version=%s", c.projectBaseURL(project), url.QueryEscape(name), c.apiVersion())
-	var resp struct {
-		Value []struct {
-			ID      int    `json:"id"`
-			Name    string `json:"name"`
-			Project struct {
-				ID   string `json:"id"`
-				Name string `json:"name"`
-			} `json:"project"`
-		} `json:"value"`
-	}
-	if err := c.Get(u, &resp); err != nil {
+	defs, err := GetAll[struct {
+		ID      int    `json:"id"`
+		Name    string `json:"name"`
+		Project struct {
+			ID   string `json:"id"`
+			Name string `json:"name"`
+		} `json:"project"`
+	}](c, u)
+	if err != nil {
 		return BuildDefinitionRef{}, err
 	}
 	var found []BuildDefinitionRef
-	for _, d := range resp.Value {
+	for _, d := range defs {
 		if strings.EqualFold(d.Name, name) {
 			found = append(found, BuildDefinitionRef{ID: d.ID, Name: d.Name, ProjectID: d.Project.ID, ProjectName: d.Project.Name})
 		}

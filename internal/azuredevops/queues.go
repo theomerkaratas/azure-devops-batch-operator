@@ -11,16 +11,14 @@ var (
 	queueCache   = map[string]map[int]string{}
 )
 
-type buildDefinitionsResponse struct {
-	Value []struct {
-		Queue struct {
-			ID   int    `json:"id"`
+type buildDefinitionQueue struct {
+	Queue struct {
+		ID   int    `json:"id"`
+		Name string `json:"name"`
+		Pool struct {
 			Name string `json:"name"`
-			Pool struct {
-				Name string `json:"name"`
-			} `json:"pool"`
-		} `json:"queue"`
-	} `json:"value"`
+		} `json:"pool"`
+	} `json:"queue"`
 }
 
 // GetProjectQueues derives a queueId -> pool/queue name map from a project's build definitions.
@@ -36,9 +34,8 @@ func (c Config) GetProjectQueues(project string) map[int]string {
 
 	mapping := map[int]string{}
 	url := fmt.Sprintf("%s/_apis/build/definitions?api-version=%s", c.projectBaseURL(project), c.apiVersion())
-	var resp buildDefinitionsResponse
-	if err := c.Get(url, &resp); err == nil {
-		for _, item := range resp.Value {
+	if defs, err := GetAll[buildDefinitionQueue](c, url); err == nil {
+		for _, item := range defs {
 			if item.Queue.ID == 0 {
 				continue
 			}
@@ -70,11 +67,8 @@ type distributedTaskQueue struct {
 // agent-based release phase. Project queues are queried first; build definitions are a fallback.
 func (c Config) ResolveQueueID(project, name string) (int, error) {
 	url := fmt.Sprintf("%s/_apis/distributedtask/queues?api-version=%s", c.projectBaseURL(project), c.apiVersion())
-	var resp struct {
-		Value []distributedTaskQueue `json:"value"`
-	}
-	if err := c.Get(url, &resp); err == nil {
-		for _, queue := range resp.Value {
+	if queues, err := GetAll[distributedTaskQueue](c, url); err == nil {
+		for _, queue := range queues {
 			if strings.EqualFold(queue.Name, name) || strings.EqualFold(queue.Pool.Name, name) {
 				return queue.ID, nil
 			}

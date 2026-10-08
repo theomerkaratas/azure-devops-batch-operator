@@ -9,16 +9,14 @@ import (
 // ListProjects returns the names of all projects in the organization or collection.
 func (c Config) ListProjects() ([]string, error) {
 	url := fmt.Sprintf("%s/_apis/projects?$top=500&api-version=%s", c.organizationBaseURL(), c.apiVersion())
-	var resp struct {
-		Value []struct {
-			Name string `json:"name"`
-		} `json:"value"`
-	}
-	if err := c.Get(url, &resp); err != nil {
+	projects, err := GetAll[struct {
+		Name string `json:"name"`
+	}](c, url)
+	if err != nil {
 		return nil, err
 	}
-	names := make([]string, 0, len(resp.Value))
-	for _, p := range resp.Value {
+	names := make([]string, 0, len(projects))
+	for _, p := range projects {
 		names = append(names, p.Name)
 	}
 	return names, nil
@@ -45,25 +43,13 @@ type Agent struct {
 // ListPools returns all agent pools of the organization or collection.
 func (c Config) ListPools() ([]Pool, error) {
 	url := fmt.Sprintf("%s/_apis/distributedtask/pools?api-version=%s", c.organizationBaseURL(), c.apiVersion())
-	var resp struct {
-		Value []Pool `json:"value"`
-	}
-	if err := c.Get(url, &resp); err != nil {
-		return nil, err
-	}
-	return resp.Value, nil
+	return GetAll[Pool](c, url)
 }
 
 // ListPoolAgents returns the agents (members) of a pool.
 func (c Config) ListPoolAgents(poolID int) ([]Agent, error) {
 	url := fmt.Sprintf("%s/_apis/distributedtask/pools/%d/agents?api-version=%s", c.organizationBaseURL(), poolID, c.apiVersion())
-	var resp struct {
-		Value []Agent `json:"value"`
-	}
-	if err := c.Get(url, &resp); err != nil {
-		return nil, err
-	}
-	return resp.Value, nil
+	return GetAll[Agent](c, url)
 }
 
 // CreateDefinitionRaw creates a new release definition (POST) from an untyped map.

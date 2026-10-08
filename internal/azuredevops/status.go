@@ -2,6 +2,7 @@ package azuredevops
 
 import (
 	"fmt"
+	neturl "net/url"
 	"strings"
 )
 
@@ -34,18 +35,32 @@ type Release struct {
 }
 
 // ListReleases returns up to top of the most recent releases (newest first) for a definition,
-// including per-stage statuses.
+// including per-stage statuses. It follows continuation tokens when the server returns fewer
+// than top in one page.
 func (c Config) ListReleases(project string, definitionID, top int) ([]Release, error) {
 	url := fmt.Sprintf(
 		"%s/_apis/release/releases?definitionId=%d&$top=%d&$expand=environments&queryOrder=descending&api-version=%s",
 		c.releaseProjectBaseURL(project), definitionID, top, c.apiVersion(),
 	)
-	var list releasesListResponse
-	if err := c.Get(url, &list); err != nil {
-		return nil, err
+	var all []Release
+	next := url
+	for page := 0; page < maxPages; page++ {
+		var list releasesListResponse
+		header, err := c.get(next, &list)
+		if err != nil {
+			return nil, err
+		}
+		all = append(all, list.Value...)
+		token := header.Get("x-ms-continuationtoken")
+		if token == "" || len(all) >= top || len(list.Value) == 0 {
+			break
+		}
+		next = url + "&continuationToken=" + neturl.QueryEscape(token)
 	}
-
-	return list.Value, nil
+	if top > 0 && len(all) > top {
+		all = all[:top]
+	}
+	return all, nil
 }
 
 type releasesListResponse struct {
