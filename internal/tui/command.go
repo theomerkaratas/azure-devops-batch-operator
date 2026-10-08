@@ -150,6 +150,29 @@ func init() { commandSpecs = append(commandSpecs, writeCommandSpecs...) }
 
 var writeCommandSpecs = []commandSpec{
 	{
+		id: "update-pipeline-cd-triggers", description: "Enables, disables, or filters continuous-deployment triggers on build artifacts.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true),
+				choiceField("action", "Action", []string{"enable", "disable", "set-filters"}, 0).withHelp("enable: create the trigger. disable: remove it. set-filters: replace filters of existing triggers."),
+				textField("alias", "Artifact aliases (comma-separated, optional)", "e.g. _Build", false).withHelp("Leave empty for every Build artifact."),
+				textField("branch", "Build branch filters (comma-separated)", "e.g. refs/heads/main", false),
+				textField("tag", "Build tag filters (comma-separated)", "e.g. release", false),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				choiceField("level", "PAT level", []string{"read-write", "manage"}, 0).withHelp(levelHelp), boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"], "--action", v["action"]}
+			for _, opt := range [][2]string{{"--alias", "alias"}, {"--branch", "branch"}, {"--tag", "tag"}} {
+				if v[opt[1]] != "" {
+					args = append(args, opt[0], v[opt[1]])
+				}
+			}
+			return writeTail(args, v), nil
+		},
+	},
+	{
 		id: "update-pipeline-stage-triggers", description: "Changes when stages start: after release, after stages, or manually.",
 		newFields: func() []*field {
 			return []*field{
@@ -808,6 +831,30 @@ var writeCommandSpecs = []commandSpec{
 func writeLevels() []string { return []string{"read-write", "manage"} }
 
 var commandSpecs = []commandSpec{
+	{
+		id:          "detect-broken-artifact-references",
+		description: "Finds release pipelines whose build pipelines, repositories, branches, or service connections no longer exist.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true).
+					withHelp("Folder or single pipeline path to check."),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				boolField("fail", "Fail when broken references exist", false).
+					withHelp("Yes: return a failed command status when something is broken, useful for CI."),
+				choiceField("level", "PAT level", readLevels(), 0).withHelp(levelHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"]}
+			if v["filter"] != "" {
+				args = append(args, "--filter", v["filter"])
+			}
+			if v["fail"] == "yes" {
+				args = append(args, "--fail-on-broken")
+			}
+			return append(args, "--level", v["level"]), nil
+		},
+	},
 	{
 		id:          "audit-pipeline-policy",
 		description: "Audits release pipelines under a path against a YAML policy.",
