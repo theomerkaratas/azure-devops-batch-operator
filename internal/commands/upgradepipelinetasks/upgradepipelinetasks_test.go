@@ -50,3 +50,12 @@ func TestMissingTargetVersion(t *testing.T) {
 		t.Fatalf("%v %v", lines, w)
 	}
 }
+
+func TestMajorsIgnorePreviewOnly(t *testing.T) {
+	preview := def(3, 0)
+	preview.Version.IsTest = true
+	catalog := azuredevops.NewTaskCatalog([]azuredevops.TaskDefinition{def(1, 0), def(2, 0), preview})
+	if got := catalog.Majors("aaaa"); len(got) != 2 || got[1] != 2 {
+		t.Fatalf("majors = %v", got)
+	}
+}

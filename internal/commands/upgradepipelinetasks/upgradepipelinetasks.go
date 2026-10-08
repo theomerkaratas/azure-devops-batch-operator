@@ -25,10 +25,13 @@ Arguments:
   --task          Task ID (GUID) or task name/friendly name, as known to the organization.
   --to-version    Major version to move to (the newest non-preview build of it is used, e.g. 2 -> "2.*").
   --from-version  Only tasks currently on this major version.
-  --force         Apply even when input compatibility problems are found, or when downgrading.
+  --force         Apply even when input compatibility problems are found, when downgrading, or when the
+                  target version is disabled.
 Before upgrading, the step's configured inputs are compared with the inputs of the target version:
 inputs that no longer exist and required inputs without a default value are reported, and such steps
-are skipped unless --force is given. Disabled task definitions and missing versions are never used.
+are skipped unless --force is given. A disabled target version is also skipped unless --force is given
+(--force then writes the disabled version into the pipelines, where it will fail to run). Versions that
+do not exist, or exist only as previews, are never used.
 `
 
 // Main runs the command using os.Args.

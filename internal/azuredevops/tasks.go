@@ -70,10 +70,13 @@ func (c Config) ListTaskDefinitions() (TaskCatalog, error) {
 // Exists reports whether any version of the task exists.
 func (c TaskCatalog) Exists(id string) bool { return len(c.byID[strings.ToLower(id)]) > 0 }
 
-// Majors returns the available major versions of a task in ascending order.
+// Majors returns the major versions of a task that have a non-preview build, in ascending order.
 func (c TaskCatalog) Majors(id string) []int {
 	var out []int
 	for _, d := range c.byID[strings.ToLower(id)] {
+		if d.Version.IsTest {
+			continue
+		}
 		if len(out) == 0 || out[len(out)-1] != d.Version.Major {
 			out = append(out, d.Version.Major)
 		}
