@@ -28,15 +28,13 @@ func (c Config) GetProjectVariableGroups(project string) (map[int]VariableGroup,
 	variableGroupCacheMu.Unlock()
 
 	url := fmt.Sprintf("%s/_apis/distributedtask/variablegroups?api-version=%s", c.projectBaseURL(project), c.apiVersion())
-	var resp struct {
-		Value []VariableGroup `json:"value"`
-	}
-	if err := c.Get(url, &resp); err != nil {
+	groups, err := GetAll[VariableGroup](c, url)
+	if err != nil {
 		return nil, err
 	}
 
-	mapping := make(map[int]VariableGroup, len(resp.Value))
-	for _, group := range resp.Value {
+	mapping := make(map[int]VariableGroup, len(groups))
+	for _, group := range groups {
 		mapping[group.ID] = group
 	}
 

@@ -90,17 +90,15 @@ func (c Config) ServiceEndpoints(project string) (map[string]string, error) {
 		return cached, nil
 	}
 	u := fmt.Sprintf("%s/_apis/serviceendpoint/endpoints?api-version=%s", c.projectBaseURL(project), c.apiVersion())
-	var resp struct {
-		Value []struct {
-			ID   string `json:"id"`
-			Name string `json:"name"`
-		} `json:"value"`
-	}
-	if err := c.Get(u, &resp); err != nil {
+	endpoints, err := GetAll[struct {
+		ID   string `json:"id"`
+		Name string `json:"name"`
+	}](c, u)
+	if err != nil {
 		return nil, err
 	}
-	out := make(map[string]string, len(resp.Value))
-	for _, e := range resp.Value {
+	out := make(map[string]string, len(endpoints))
+	for _, e := range endpoints {
 		out[strings.ToLower(e.ID)] = e.Name
 	}
 	endpointCacheMu.Lock()
