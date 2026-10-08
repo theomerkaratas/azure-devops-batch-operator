@@ -29,7 +29,7 @@ func Write(w io.Writer, format string, recs []Record) error {
 
 var csvHeader = []string{
 	"project", "folder", "pipeline", "id", "revision", "variables", "secret_variables", "variable_groups", "artifacts",
-	"triggers", "schedules", "stage", "rank", "stage_variables", "pre_approvals", "post_approvals",
+	"triggers", "schedules", "stage", "rank", "conditions", "stage_variables", "pre_approvals", "post_approvals",
 	"retention_days", "retention_releases", "retain_build", "jobs", "pools", "demands", "tasks",
 }
 
@@ -78,7 +78,7 @@ func writeCSV(w io.Writer, recs []Record) error {
 					rb = fmt.Sprint(*s.Retention.RetainBuild)
 				}
 			}
-			row := append(append([]string{}, base...), s.Name, fmt.Sprint(s.Rank), fmt.Sprint(len(s.Variables)), s.PreApprovals, s.PostApprovals,
+			row := append(append([]string{}, base...), s.Name, fmt.Sprint(s.Rank), strings.Join(s.Conditions, ";"), fmt.Sprint(len(s.Variables)), s.PreApprovals, s.PostApprovals,
 				days, rel, rb, strings.Join(jobs, ";"), strings.Join(pools, ";"), strings.Join(demands, ";"), strings.Join(tasks, ";"))
 			if err := cw.Write(row); err != nil {
 				return err
@@ -110,6 +110,9 @@ func writeText(w io.Writer, recs []Record) {
 		}
 		for _, s := range r.Stages {
 			fmt.Fprintf(w, "  stage %d. %s | pre: %s | post: %s", s.Rank, s.Name, s.PreApprovals, s.PostApprovals)
+			if len(s.Conditions) > 0 {
+				fmt.Fprintf(w, " | conditions: %s", strings.Join(s.Conditions, "; "))
+			}
 			if s.Retention != nil {
 				fmt.Fprintf(w, " | retention: %d days, %d releases", s.Retention.Days, s.Retention.Releases)
 				if s.Retention.RetainBuild != nil {

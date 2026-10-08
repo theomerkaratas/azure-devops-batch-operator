@@ -296,8 +296,15 @@ func (r Record) Flatten() map[string]string {
 			}
 		}
 		vars(p, s.Variables)
+		seenJobs := map[string]int{}
 		for _, j := range s.Jobs {
-			jp := p + "job " + j.Name + ": "
+			// Jobs may share a name; later ones get an occurrence suffix so none overwrites another.
+			seenJobs[j.Name]++
+			jobKey := j.Name
+			if n := seenJobs[j.Name]; n > 1 {
+				jobKey = fmt.Sprintf("%s #%d", j.Name, n)
+			}
+			jp := p + "job " + jobKey + ": "
 			out[jp+"type"] = j.Type
 			out[jp+"pool"] = j.Pool
 			out[jp+"demands"] = strings.Join(j.Demands, "; ")

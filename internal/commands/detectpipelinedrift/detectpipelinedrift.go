@@ -45,6 +45,8 @@ retention, jobs, pools, demands, timeouts and tasks. Names, ids and revisions ar
 type baselineFile struct {
 	Source   string            `json:"source"`
 	Settings map[string]string `json:"settings"`
+	// NoConsensus lists settings the consensus could not agree on; they stay unjudged.
+	NoConsensus []string `json:"noConsensus,omitempty"`
 }
 
 // Main runs the command using os.Args.
@@ -137,7 +139,7 @@ func run(target, filter, level, ref, basePath, writeBase, format string, minAgre
 		if err := json.Unmarshal(data, &bf); err != nil || bf.Settings == nil {
 			return false, fmt.Errorf("%s: not a baseline file (expected {\"settings\": {...}})", basePath)
 		}
-		baseline, source = bf.Settings, "baseline file "+basePath
+		baseline, skip, source = bf.Settings, bf.NoConsensus, "baseline file "+basePath
 	}
 
 	all := make(map[string]map[string]string, len(recs))
@@ -155,7 +157,7 @@ func run(target, filter, level, ref, basePath, writeBase, format string, minAgre
 		source = fmt.Sprintf("consensus of %d pipelines (>= %d%% agreement)", len(all), int(minAgree*100))
 	}
 	if writeBase != "" {
-		data, _ := json.MarshalIndent(baselineFile{Source: source, Settings: baseline}, "", "  ")
+		data, _ := json.MarshalIndent(baselineFile{Source: source, Settings: baseline, NoConsensus: skip}, "", "  ")
 		if err := os.WriteFile(writeBase, data, 0o644); err != nil {
 			return false, err
 		}

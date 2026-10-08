@@ -84,3 +84,27 @@ func TestWriteFormats(t *testing.T) {
 		t.Fatal("expected error for unknown format")
 	}
 }
+
+func TestFlattenKeepsDuplicateJobNamesApart(t *testing.T) {
+	r := Record{Stages: []Stage{{Name: "S", Jobs: []Job{
+		{Name: "Run", Pool: "A", Tasks: []Task{{Name: "x", Version: "1"}}},
+		{Name: "Run", Pool: "B", Tasks: []Task{{Name: "y", Version: "2"}}},
+	}}}}
+	f := r.Flatten()
+	if f["stage S: job Run: pool"] != "A" || f["stage S: job Run #2: pool"] != "B" {
+		t.Fatalf("flat = %v", f)
+	}
+	if f["stage S: job Run: task 01"] == f["stage S: job Run #2: task 01"] {
+		t.Fatal("tasks of duplicate jobs collided")
+	}
+}
+
+func TestConditionsAreReported(t *testing.T) {
+	recs := []Record{{Name: "App", Stages: []Stage{{Name: "Prod", Conditions: []string{"Dev:environmentState:4"}}}}}
+	var buf bytes.Buffer
+	_ = Write(&buf, "csv", recs)
+	_ = Write(&buf, "text", recs)
+	if strings.Count(buf.String(), "Dev:environmentState:4") != 2 {
+		t.Fatalf("conditions missing from output:\n%s", buf.String())
+	}
+}
