@@ -32,6 +32,16 @@ type Release struct {
 		DisplayName string `json:"displayName"`
 	} `json:"createdBy"`
 	Environments []ReleaseEnvironmentStatus `json:"environments"`
+	Artifacts    []ReleaseArtifact          `json:"artifacts"`
+}
+
+// ReleaseArtifact is the pinned artifact version attached to a release.
+type ReleaseArtifact struct {
+	Alias             string `json:"alias"`
+	InstanceReference struct {
+		ID   string `json:"id"`
+		Name string `json:"name"`
+	} `json:"instanceReference"`
 }
 
 // ListReleases returns up to top of the most recent releases (newest first) for a definition,

@@ -137,3 +137,30 @@ func TestReleaseApprovalAPIs(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestCreateReleaseWithArtifactsPinsVersions(t *testing.T) {
+	stubHTTPClient(t, func(r *http.Request) (*http.Response, error) {
+		if r.Method != http.MethodPost || !strings.HasSuffix(r.URL.Path, "/_apis/release/releases") {
+			t.Errorf("unexpected request: %s %s", r.Method, r.URL.String())
+		}
+		var body struct {
+			DefinitionID int               `json:"definitionId"`
+			Artifacts    []ReleaseArtifact `json:"artifacts"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			t.Fatal(err)
+		}
+		if body.DefinitionID != 9 || len(body.Artifacts) != 1 || body.Artifacts[0].Alias != "drop" || body.Artifacts[0].InstanceReference.ID != "42" {
+			t.Errorf("unexpected body: %#v", body)
+		}
+		return response(http.StatusOK, `{"id":100,"name":"Release-100"}`), nil
+	})
+	var artifact ReleaseArtifact
+	artifact.Alias = "drop"
+	artifact.InstanceReference.ID = "42"
+	cfg := Config{PAT: "secret", ReleaseURL: "https://vsrm.dev.azure.com/example", Deployment: DeploymentCloud}
+	created, err := cfg.CreateReleaseWithArtifacts("Project", 9, "rollback", []string{"Prod"}, []ReleaseArtifact{artifact})
+	if err != nil || created.ID != 100 {
+		t.Fatalf("CreateReleaseWithArtifacts() = %+v, %v", created, err)
+	}
+}
