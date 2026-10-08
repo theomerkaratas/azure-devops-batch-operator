@@ -53,6 +53,7 @@ var menuTree = []menuNode{
 			{label: "Release status", description: "List latest status across pipelines.", commandID: "list-release-status"},
 		}},
 		{label: "Broken artifact references", description: "Find missing build pipelines, repos, branches, and service connections.", commandID: "detect-broken-artifact-references"},
+		{label: "Deprecated tasks", description: "Find deprecated, disabled, missing, or unsupported tasks.", commandID: "detect-deprecated-tasks"},
 		{label: "Policy audit", description: "Audit release pipelines against a YAML policy.", commandID: "audit-pipeline-policy"},
 	}},
 	{label: "Compare", description: "Compare pipelines or whole folders.", children: []menuNode{
@@ -72,6 +73,7 @@ var menuTree = []menuNode{
 		{label: "Stage triggers", description: "Set when stages start: after release, after stages, or manual.", commandID: "update-pipeline-stage-triggers"},
 		{label: "Artifact sources", description: "Replace build sources, branches, projects, or aliases.", commandID: "update-pipeline-artifacts"},
 		{label: "Continuous deployment", description: "Enable, disable, or filter artifact-triggered releases.", commandID: "update-pipeline-cd-triggers"},
+		{label: "Upgrade task versions", description: "Move a task to another major version after an input check.", commandID: "upgrade-pipeline-tasks"},
 		{label: "Pipeline variable groups", description: "Link or unlink shared variable groups.", commandID: "update-pipeline-variable-groups"},
 		{label: "Enforce pipeline policy", description: "Fix release pipelines to comply with a YAML policy.", commandID: "enforce-pipeline-policy"},
 	}},

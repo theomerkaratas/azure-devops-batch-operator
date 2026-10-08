@@ -216,7 +216,9 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `list-release-history`
 - `list-release-status`
 - `detect-broken-artifact-references`
+- `detect-deprecated-tasks`
 - `update-pipeline-cd-triggers`
+- `upgrade-pipeline-tasks`
 - `manage-pipeline-stages`
 - `copy-pipeline-stage`
 - `synchronize-pipelines`
@@ -298,6 +300,23 @@ returns exit code 1 for CI:
 
 ```console
 a22r detect-broken-artifact-references 'Example.Project\TEST' --fail-on-broken
+```
+
+Upgrade a task to another major version with `upgrade-pipeline-tasks`. `--task` takes a task name or
+GUID. Before changing a step, its configured inputs are checked against the target version: removed
+inputs and required inputs without a default are reported and the step is skipped unless `--force`
+is given. Downgrades also need `--force`:
+
+```console
+a22r upgrade-pipeline-tasks 'Example.Project\TEST' --task PowerShell --to-version 2 --dry-run
+```
+
+Find pipelines at risk of future failures with `detect-deprecated-tasks`. It reports `MISSING`,
+`UNSUPPORTED`, `DISABLED`, and `DEPRECATED` task versions (and `OUTDATED` with `--include-outdated`)
+for enabled steps; `--fail-on-findings` returns exit code 1 for CI:
+
+```console
+a22r detect-deprecated-tasks 'Example.Project\TEST' --include-outdated
 ```
 
 Link or unlink shared variable groups by numeric Azure DevOps group ID:

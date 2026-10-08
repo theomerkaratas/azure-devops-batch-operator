@@ -22,6 +22,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/deletepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/deletepipelinesteps"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/detectbrokenartifactreferences"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/detectdeprecatedtasks"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/detectpipelinevariableconflicts"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/enforcepipelinepolicy"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelineagentjob"
@@ -50,6 +51,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinestagetriggers"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinevariablegroups"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinevariables"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/upgradepipelinetasks"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/tui"
 )
 
@@ -77,6 +79,8 @@ var commands = map[string]func(){
 	"delete-pipeline-steps":              deletepipelinesteps.Main,
 	"detect-broken-artifact-references":  detectbrokenartifactreferences.Main,
 	"update-pipeline-cd-triggers":        updatepipelinecdtriggers.Main,
+	"detect-deprecated-tasks":            detectdeprecatedtasks.Main,
+	"upgrade-pipeline-tasks":             upgradepipelinetasks.Main,
 	"detect-pipeline-variable-conflicts": detectpipelinevariableconflicts.Main,
 	"enforce-pipeline-policy":            enforcepipelinepolicy.Main,
 	"list-pool-members":                  listpoolmembers.Main,

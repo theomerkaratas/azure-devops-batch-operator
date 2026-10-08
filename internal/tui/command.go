@@ -150,6 +150,36 @@ func init() { commandSpecs = append(commandSpecs, writeCommandSpecs...) }
 
 var writeCommandSpecs = []commandSpec{
 	{
+		id: "upgrade-pipeline-tasks", description: "Upgrades a task to another major version after checking input compatibility.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true),
+				textField("task", "Task (name or ID)", "e.g. PowerShell", true).withHelp("Task name, friendly name, or GUID as known to the organization."),
+				textField("to_version", "Upgrade to major version", "e.g. 2", true),
+				textField("from_version", "Only from major version (optional)", "e.g. 1", false),
+				boolField("force", "Force (ignore input problems and downgrades)", false),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				choiceField("level", "PAT level", []string{"read-write", "manage"}, 0).withHelp(levelHelp), boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			if n, err := strconv.Atoi(v["to_version"]); err != nil || n <= 0 {
+				return nil, fmt.Errorf("invalid target version %q", v["to_version"])
+			}
+			args := []string{v["target"], "--task", v["task"], "--to-version", v["to_version"]}
+			if v["from_version"] != "" {
+				if n, err := strconv.Atoi(v["from_version"]); err != nil || n <= 0 {
+					return nil, fmt.Errorf("invalid source version %q", v["from_version"])
+				}
+				args = append(args, "--from-version", v["from_version"])
+			}
+			if v["force"] == "yes" {
+				args = append(args, "--force")
+			}
+			return writeTail(args, v), nil
+		},
+	},
+	{
 		id: "update-pipeline-cd-triggers", description: "Enables, disables, or filters continuous-deployment triggers on build artifacts.",
 		newFields: func() []*field {
 			return []*field{
@@ -831,6 +861,34 @@ var writeCommandSpecs = []commandSpec{
 func writeLevels() []string { return []string{"read-write", "manage"} }
 
 var commandSpecs = []commandSpec{
+	{
+		id:          "detect-deprecated-tasks",
+		description: "Finds deprecated, disabled, missing, or unsupported task versions in release pipelines.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true).
+					withHelp("Folder or single pipeline path to check."),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				boolField("outdated", "Also report newer major versions", false),
+				boolField("fail", "Fail when problems exist", false).
+					withHelp("Yes: return a failed command status when at-risk tasks are found, useful for CI."),
+				choiceField("level", "PAT level", readLevels(), 0).withHelp(levelHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"]}
+			if v["filter"] != "" {
+				args = append(args, "--filter", v["filter"])
+			}
+			if v["outdated"] == "yes" {
+				args = append(args, "--include-outdated")
+			}
+			if v["fail"] == "yes" {
+				args = append(args, "--fail-on-findings")
+			}
+			return append(args, "--level", v["level"]), nil
+		},
+	},
 	{
 		id:          "detect-broken-artifact-references",
 		description: "Finds release pipelines whose build pipelines, repositories, branches, or service connections no longer exist.",
