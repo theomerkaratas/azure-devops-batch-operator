@@ -236,8 +236,28 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `update-pipeline-schedule`
 - `update-pipeline-variables`
 - `update-pipeline-variable-groups`
+- `resume-batch`
+- `rollback-batch`
+- `list-batch-manifests`
 
 Use `--dry-run` before applying batch changes. Commands that make changes may also require `--yes` (or `-y`) to skip interactive confirmation.
+
+Every batch update that saves changes first writes an operation manifest to a `manifests` folder
+beside the configuration file (override with `A22R_MANIFEST_DIR`; files are owner-only because
+planned definitions can contain secret values you set). It records the target pipelines, their original
+revisions and definitions, the planned changes, and each result or failure. Dry runs write nothing.
+
+```console
+a22r list-batch-manifests                 # list manifests, or pass an ID to see details
+a22r resume-batch 20260101-120000-ab12cd  # finish pending/failed pipelines only
+a22r rollback-batch 20260101-120000-ab12cd --dry-run
+```
+
+`resume-batch` skips pipelines already updated and applies the rest only if their revision is still
+the one the operation read. `rollback-batch` restores the captured definitions, but only for
+pipelines whose current revision is still the one the operation produced; anything edited since is
+reported and left alone. Secret variable values are masked by Azure DevOps, so a rollback cannot
+recover them.
 
 Synchronize selected parts of matching pipelines from a golden reference definition:
 

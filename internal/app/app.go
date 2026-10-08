@@ -27,6 +27,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/detectdeprecatedtasks"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/detectpipelinevariableconflicts"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/enforcepipelinepolicy"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listbatchmanifests"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelineagentjob"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelineschedule"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelinesteps"
@@ -42,6 +43,8 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/replacepipelinecontent"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/replacepipelinevariablegroups"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/restorepipelines"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/resumebatch"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/rollbackbatch"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/synchronizepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/triggerrelease"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineagentjob"
@@ -71,6 +74,9 @@ var commands = map[string]func(){
 	"audit-pipeline-policy":              auditpipelinepolicy.Main,
 	"backup-pipelines":                   backuppipelines.Main,
 	"restore-pipelines":                  restorepipelines.Main,
+	"resume-batch":                       resumebatch.Main,
+	"rollback-batch":                     rollbackbatch.Main,
+	"list-batch-manifests":               listbatchmanifests.Main,
 	"synchronize-pipelines":              synchronizepipelines.Main,
 	"cancel-releases":                    cancelreleases.Main,
 	"cleanup-releases":                   cleanupreleases.Main,
