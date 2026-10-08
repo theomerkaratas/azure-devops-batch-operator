@@ -35,6 +35,8 @@ var menuTree = []menuNode{
 		{label: "PowerShell pipeline", description: "Create a release pipeline from PowerShell scripts.", commandID: "create-powershell-pipeline"},
 		{label: "Orchestrate releases", description: "Create releases in waves with concurrency, waiting, retries, and a summary.", commandID: "orchestrate-releases"},
 		{label: "Trigger release", description: "Create releases for matching pipelines.", commandID: "trigger-release"},
+		{label: "Retry failed releases", description: "Redeploy failed stages across existing releases.", commandID: "retry-failed-releases"},
+		{label: "Redeploy release stages", description: "Redeploy a completed stage across existing releases.", commandID: "redeploy-release-stages"},
 		{label: "Create files", description: "Create empty local files and folders.", commandID: "create-files"},
 	}},
 	{label: "Clone", description: "Copy a release pipeline or an entire folder tree.", children: []menuNode{
@@ -57,6 +59,7 @@ var menuTree = []menuNode{
 		{label: "Deprecated tasks", description: "Find deprecated, disabled, missing, or unsupported tasks.", commandID: "detect-deprecated-tasks"},
 		{label: "Permissions audit", description: "Report who can view, edit, administer, trigger, approve, or delete pipelines.", commandID: "audit-pipeline-permissions"},
 		{label: "Policy audit", description: "Audit release pipelines against a YAML policy.", commandID: "audit-pipeline-policy"},
+		{label: "Validate release batch", description: "Check stages, artifacts, queues, and active deployments before release.", commandID: "validate-release-batch"},
 		{label: "Inventory report", description: "Export stages, tasks, variables, pools, schedules, approvals and retention as text, JSON or CSV.", commandID: "report-pipeline-inventory"},
 	}},
 	{label: "Compare", description: "Compare pipelines or whole folders.", children: []menuNode{
@@ -80,6 +83,7 @@ var menuTree = []menuNode{
 		{label: "Upgrade task versions", description: "Move a task to another major version after an input check.", commandID: "upgrade-pipeline-tasks"},
 		{label: "Release retention", description: "Standardize days, release count, and build retention per stage.", commandID: "update-pipeline-retention"},
 		{label: "Pipeline variable groups", description: "Link or unlink shared variable groups.", commandID: "update-pipeline-variable-groups"},
+		{label: "Release approvals", description: "Approve or reject pending approvals across existing releases.", commandID: "manage-release-approvals"},
 		{label: "Enforce pipeline policy", description: "Fix release pipelines to comply with a YAML policy.", commandID: "enforce-pipeline-policy"},
 	}},
 	{label: "Delete", description: "Delete pipelines or exactly named steps.", children: []menuNode{

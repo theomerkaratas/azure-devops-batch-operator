@@ -39,13 +39,16 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listreleases"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listreleasestatus"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/managepipelinestages"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/managereleaseapprovals"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/orchestratereleases"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/redeployreleasestages"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/renameormovepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/replacepipelinecontent"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/replacepipelinevariablegroups"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/reportpipelineinventory"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/restorepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/resumebatch"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/retryfailedreleases"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/rollbackbatch"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/synchronizepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/triggerrelease"
@@ -61,6 +64,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinevariablegroups"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinevariables"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/upgradepipelinetasks"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/validatereleasebatch"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/tui"
 )
 
@@ -78,6 +82,7 @@ var commands = map[string]func(){
 	"detect-pipeline-drift":              detectpipelinedrift.Main,
 	"report-pipeline-inventory":          reportpipelineinventory.Main,
 	"restore-pipelines":                  restorepipelines.Main,
+	"retry-failed-releases":              retryfailedreleases.Main,
 	"resume-batch":                       resumebatch.Main,
 	"rollback-batch":                     rollbackbatch.Main,
 	"list-batch-manifests":               listbatchmanifests.Main,
@@ -99,6 +104,7 @@ var commands = map[string]func(){
 	"update-pipeline-cd-triggers":        updatepipelinecdtriggers.Main,
 	"detect-deprecated-tasks":            detectdeprecatedtasks.Main,
 	"upgrade-pipeline-tasks":             upgradepipelinetasks.Main,
+	"validate-release-batch":             validatereleasebatch.Main,
 	"detect-pipeline-variable-conflicts": detectpipelinevariableconflicts.Main,
 	"enforce-pipeline-policy":            enforcepipelinepolicy.Main,
 	"list-pool-members":                  listpoolmembers.Main,
@@ -112,6 +118,8 @@ var commands = map[string]func(){
 	"list-pipeline-variables":            listpipelinevariables.Main,
 	"list-release-history":               listreleasehistory.Main,
 	"list-release-status":                listreleasestatus.Main,
+	"manage-release-approvals":           managereleaseapprovals.Main,
+	"redeploy-release-stages":            redeployreleasestages.Main,
 	"trigger-release":                    triggerrelease.Main,
 	"update-pipeline-agent-job":          updatepipelineagentjob.Main,
 	"update-pipeline-approvals":          updatepipelineapprovals.Main,

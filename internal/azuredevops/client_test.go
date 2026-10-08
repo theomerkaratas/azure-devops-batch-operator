@@ -1,6 +1,7 @@
 package azuredevops
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"strings"
@@ -77,6 +78,62 @@ func TestDeleteUsesDeleteMethod(t *testing.T) {
 	})
 
 	if err := (Config{PAT: "secret"}).Delete("https://example.test/item"); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestRetryReleaseEnvironmentQueuesRedeploy(t *testing.T) {
+	stubHTTPClient(t, func(r *http.Request) (*http.Response, error) {
+		if r.Method != http.MethodPatch {
+			t.Errorf("method = %q, want PATCH", r.Method)
+		}
+		if !strings.Contains(r.URL.Path, "/releases/12/environments/34") {
+			t.Errorf("path = %q", r.URL.Path)
+		}
+		var body map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			t.Fatal(err)
+		}
+		if body["status"] != "inProgress" {
+			t.Errorf("status = %q, want inProgress", body["status"])
+		}
+		return response(http.StatusOK, ""), nil
+	})
+
+	cfg := Config{PAT: "secret", ReleaseURL: "https://vsrm.dev.azure.com/example", Deployment: DeploymentCloud}
+	if err := cfg.RetryReleaseEnvironment("Project", 12, 34); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestReleaseApprovalAPIs(t *testing.T) {
+	calls := 0
+	stubHTTPClient(t, func(r *http.Request) (*http.Response, error) {
+		calls++
+		if calls == 1 {
+			if r.Method != http.MethodGet || r.URL.Query().Get("statusFilter") != "pending" || r.URL.Query().Get("releaseIdsFilter") != "10,20" {
+				t.Errorf("unexpected list request: %s %s", r.Method, r.URL.String())
+			}
+			return response(http.StatusOK, `{"value":[{"id":7,"status":"pending","approvalType":"preDeploy"}]}`), nil
+		}
+		if r.Method != http.MethodPatch || !strings.HasSuffix(r.URL.Path, "/approvals/7") {
+			t.Errorf("unexpected update request: %s %s", r.Method, r.URL.String())
+		}
+		var body map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			t.Fatal(err)
+		}
+		if body["status"] != "approved" || body["comments"] != "ok" {
+			t.Errorf("unexpected body: %#v", body)
+		}
+		return response(http.StatusOK, ""), nil
+	})
+	cfg := Config{PAT: "secret", ReleaseURL: "https://vsrm.dev.azure.com/example", Deployment: DeploymentCloud}
+	values, err := cfg.ListPendingReleaseApprovals("Project", []int{10, 20}, 100)
+	if err != nil || len(values) != 1 || values[0].ID != 7 {
+		t.Fatalf("ListPendingReleaseApprovals() = %+v, %v", values, err)
+	}
+	if err := cfg.UpdateReleaseApproval("Project", 7, "approved", "ok"); err != nil {
 		t.Fatal(err)
 	}
 }

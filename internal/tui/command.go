@@ -998,6 +998,147 @@ func writeLevels() []string { return []string{"read-write", "manage"} }
 
 var commandSpecs = []commandSpec{
 	{
+		id:          "redeploy-release-stages",
+		description: "Redeploys a completed stage across existing releases in bulk.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				textField("stage", "Stage to redeploy", "e.g. Production", true),
+				textField("top", "Recent releases to inspect", "20", false),
+				boolField("all_releases", "Redeploy every eligible release", false),
+				textField("comment", "Deployment comment", "Redeployed by azure-devops-batch-operator", false),
+				choiceField("level", "PAT level", writeLevels(), 0).withHelp(levelHelp),
+				boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"], "--stage", v["stage"]}
+			if v["top"] != "" {
+				n, err := strconv.Atoi(v["top"])
+				if err != nil || n < 1 {
+					return nil, fmt.Errorf("recent releases must be a positive integer")
+				}
+				args = append(args, "--top", v["top"])
+			}
+			if v["all_releases"] == "yes" {
+				args = append(args, "--all-releases")
+			}
+			if v["comment"] != "" {
+				args = append(args, "--comment", v["comment"])
+			}
+			return writeTail(args, v), nil
+		},
+	},
+	{
+		id:          "manage-release-approvals",
+		description: "Approves or rejects pending approvals across existing releases.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				choiceField("action", "Action", []string{"approve", "reject"}, 0),
+				choiceField("phase", "Approval phase", []string{"both", "pre", "post"}, 0),
+				textField("stage", "Stage filter (optional)", "e.g. Production", false),
+				textField("top_releases", "Recent releases to inspect", "20", false),
+				textField("comment", "Approval comment", "Updated by azure-devops-batch-operator", false),
+				choiceField("level", "PAT level", writeLevels(), 1).withHelp(levelHelp),
+				boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"], "--action", v["action"], "--phase", v["phase"]}
+			if v["stage"] != "" {
+				args = append(args, "--stage", v["stage"])
+			}
+			if v["top_releases"] != "" {
+				n, err := strconv.Atoi(v["top_releases"])
+				if err != nil || n < 1 {
+					return nil, fmt.Errorf("recent releases must be a positive integer")
+				}
+				args = append(args, "--top-releases", v["top_releases"])
+			}
+			if v["comment"] != "" {
+				args = append(args, "--comment", v["comment"])
+			}
+			return writeTail(args, v), nil
+		},
+	},
+	{
+		id:          "validate-release-batch",
+		description: "Checks whether matching release pipelines are ready to run as a batch.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				textField("stages", "Required stages (;-separated)", "e.g. Development;Production", false),
+				textField("top", "Recent releases to inspect", "20", false),
+				boolField("allow_active", "Allow active deployments", false),
+				boolField("fail_on_issues", "Fail on blocking issues", false),
+				choiceField("level", "PAT level", readLevels(), 0).withHelp(levelHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"], "--level", v["level"]}
+			if v["filter"] != "" {
+				args = append(args, "--filter", v["filter"])
+			}
+			for _, stage := range splitList(v["stages"]) {
+				args = append(args, "--stage", stage)
+			}
+			if v["top"] != "" {
+				n, err := strconv.Atoi(v["top"])
+				if err != nil || n < 1 {
+					return nil, fmt.Errorf("recent releases must be a positive integer")
+				}
+				args = append(args, "--top", v["top"])
+			}
+			if v["allow_active"] == "yes" {
+				args = append(args, "--allow-active")
+			}
+			if v["fail_on_issues"] == "yes" {
+				args = append(args, "--fail-on-issues")
+			}
+			return args, nil
+		},
+	},
+	{
+		id:          "retry-failed-releases",
+		description: "Retries failed stages across existing releases in bulk.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				textField("stage", "Stage filter (optional)", "e.g. Production", false),
+				textField("top", "Recent releases to inspect", "20", false),
+				boolField("all_failed", "Retry all matching failed releases", false),
+				boolField("include_canceled", "Include canceled stages", false),
+				choiceField("level", "PAT level", writeLevels(), 0).withHelp(levelHelp),
+				boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"]}
+			if v["stage"] != "" {
+				args = append(args, "--stage", v["stage"])
+			}
+			if v["top"] != "" {
+				n, err := strconv.Atoi(v["top"])
+				if err != nil || n < 1 {
+					return nil, fmt.Errorf("recent releases must be a positive integer")
+				}
+				args = append(args, "--top", v["top"])
+			}
+			if v["all_failed"] == "yes" {
+				args = append(args, "--all-failed")
+			}
+			if v["include_canceled"] == "yes" {
+				args = append(args, "--include-canceled")
+			}
+			return writeTail(args, v), nil
+		},
+	},
+	{
 		id:          "audit-pipeline-permissions",
 		description: "Reports who can view, edit, administer, trigger, approve, or delete pipelines and flags broad or inconsistent permissions.",
 		newFields: func() []*field {

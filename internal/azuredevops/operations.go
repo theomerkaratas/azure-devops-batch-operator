@@ -105,6 +105,30 @@ func (c Config) CancelReleaseEnvironment(project string, releaseID, environmentI
 	return c.Patch(url, map[string]string{"status": "canceled", "comment": "Canceled by azure-devops-batch-operator"}, nil)
 }
 
+// RetryReleaseEnvironment queues a new deployment attempt for a failed stage of an existing
+// release. Azure DevOps treats setting a completed environment back to inProgress as a redeploy.
+func (c Config) RetryReleaseEnvironment(project string, releaseID, environmentID int) error {
+	return c.StartReleaseEnvironment(project, releaseID, environmentID, "Retried by azure-devops-batch-operator")
+}
+
+// StartReleaseEnvironment queues a deployment or redeployment of a stage in an existing release.
+func (c Config) StartReleaseEnvironment(project string, releaseID, environmentID int, comment string) error {
+	version := "6.0-preview.6"
+	if c.Deployment == DeploymentCloud {
+		version = c.apiVersion()
+	}
+	url := fmt.Sprintf(
+		"%s/_apis/release/releases/%d/environments/%d?api-version=%s",
+		c.releaseProjectBaseURL(project), releaseID, environmentID, version,
+	)
+	return c.Patch(url, map[string]interface{}{
+		"status":                  "inProgress",
+		"comment":                 comment,
+		"scheduledDeploymentTime": nil,
+		"variables":               map[string]interface{}{},
+	}, nil)
+}
+
 // AbandonRelease abandons a release so it can no longer be deployed.
 func (c Config) AbandonRelease(project string, releaseID int) error {
 	url := fmt.Sprintf("%s/_apis/release/releases/%d?api-version=%s", c.releaseProjectBaseURL(project), releaseID, c.apiVersion())
