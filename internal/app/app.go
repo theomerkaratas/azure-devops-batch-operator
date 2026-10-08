@@ -12,6 +12,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/auditpipelinepolicy"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/backuppipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/cancelreleases"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/cleanupreleases"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/clonefolder"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/clonepipeline"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/comparefolders"
@@ -47,6 +48,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinecdtriggers"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinedemands"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinegates"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineretention"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineschedule"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinestagetriggers"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinevariablegroups"
@@ -67,6 +69,8 @@ var commands = map[string]func(){
 	"restore-pipelines":                  restorepipelines.Main,
 	"synchronize-pipelines":              synchronizepipelines.Main,
 	"cancel-releases":                    cancelreleases.Main,
+	"cleanup-releases":                   cleanupreleases.Main,
+	"update-pipeline-retention":          updatepipelineretention.Main,
 	"clone-pipeline":                     clonepipeline.Main,
 	"clone-folder":                       clonefolder.Main,
 	"compare-pipelines":                  comparepipelines.Main,

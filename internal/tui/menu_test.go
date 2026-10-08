@@ -58,7 +58,7 @@ func TestCloneMenuGroupsPipelineAndFolderCloning(t *testing.T) {
 
 func TestDeleteMenuGroupsPipelineAndStepDeletion(t *testing.T) {
 	deleteMenu := menuTree[5].children
-	want := []string{"Release pipelines", "Pipeline steps"}
+	want := []string{"Release pipelines", "Pipeline steps", "Old releases"}
 	if len(deleteMenu) != len(want) {
 		t.Fatalf("Delete submenu has %d entries, want %d", len(deleteMenu), len(want))
 	}
