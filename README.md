@@ -215,6 +215,8 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `list-pipeline-variables`
 - `list-release-history`
 - `list-release-status`
+- `detect-broken-artifact-references`
+- `update-pipeline-cd-triggers`
 - `manage-pipeline-stages`
 - `copy-pipeline-stage`
 - `synchronize-pipelines`
@@ -278,6 +280,24 @@ pipeline, project, or branch, then set a new build pipeline, project, branch, or
 ```console
 a22r update-pipeline-artifacts 'Example.Project\TEST' \
   --match-definition OldBuild --set-definition NewBuild --dry-run
+```
+
+Enable, disable, or filter continuous-deployment triggers (releases created when a build artifact
+is published) with `update-pipeline-cd-triggers`. `--action` is `enable`, `disable`, or `set-filters`;
+`--alias` limits the artifacts, and `--branch` / `--tag` set the build filters:
+
+```console
+a22r update-pipeline-cd-triggers 'Example.Project\TEST' \
+  --action enable --branch refs/heads/main --dry-run
+```
+
+Find release pipelines likely to fail before deployment starts. `detect-broken-artifact-references`
+checks that referenced build pipelines, Azure Repos repositories and branches, and service connections
+still exist. Findings are `BROKEN` or `UNCHECKED` (could not be verified); `--fail-on-broken`
+returns exit code 1 for CI:
+
+```console
+a22r detect-broken-artifact-references 'Example.Project\TEST' --fail-on-broken
 ```
 
 Link or unlink shared variable groups by numeric Azure DevOps group ID:

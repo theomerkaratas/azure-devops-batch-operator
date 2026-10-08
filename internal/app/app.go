@@ -21,6 +21,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/createpowershellpipeline"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/deletepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/deletepipelinesteps"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/detectbrokenartifactreferences"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/detectpipelinevariableconflicts"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/enforcepipelinepolicy"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelineagentjob"
@@ -42,6 +43,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineagentjob"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineapprovals"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineartifacts"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinecdtriggers"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinedemands"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinegates"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineschedule"
@@ -73,6 +75,8 @@ var commands = map[string]func(){
 	"create-powershell-pipeline":         createpowershellpipeline.Main,
 	"delete-pipelines":                   deletepipelines.Main,
 	"delete-pipeline-steps":              deletepipelinesteps.Main,
+	"detect-broken-artifact-references":  detectbrokenartifactreferences.Main,
+	"update-pipeline-cd-triggers":        updatepipelinecdtriggers.Main,
 	"detect-pipeline-variable-conflicts": detectpipelinevariableconflicts.Main,
 	"enforce-pipeline-policy":            enforcepipelinepolicy.Main,
 	"list-pool-members":                  listpoolmembers.Main,
