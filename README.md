@@ -211,12 +211,14 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `rename-or-move-pipelines`
 - `replace-pipeline-content`
 - `replace-pipeline-variable-groups`
+- `retry-failed-releases`
 - `list-pipeline-agent-job`
 - `list-pipeline-schedule`
 - `list-pipeline-steps`
 - `list-pipeline-variables`
 - `list-release-history`
 - `list-release-status`
+- `manage-release-approvals`
 - `detect-broken-artifact-references`
 - `detect-deprecated-tasks`
 - `update-pipeline-cd-triggers`
@@ -225,6 +227,7 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `copy-pipeline-stage`
 - `synchronize-pipelines`
 - `orchestrate-releases`
+- `redeploy-release-stages`
 - `trigger-release`
 - `update-pipeline-agent-job`
 - `update-pipeline-approvals`
@@ -236,6 +239,7 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `update-pipeline-schedule`
 - `update-pipeline-variables`
 - `update-pipeline-variable-groups`
+- `validate-release-batch`
 - `report-pipeline-inventory`
 - `detect-pipeline-drift`
 - `resume-batch`

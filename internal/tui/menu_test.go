@@ -16,7 +16,7 @@ func TestMainMenuHasEightTopLevelCategories(t *testing.T) {
 
 func TestReadMenuGroupsDetailCommandsUnderList(t *testing.T) {
 	readMenu := menuTree[2].children
-	want := []string{"List", "Broken artifact references", "Deprecated tasks", "Permissions audit", "Policy audit", "Inventory report"}
+	want := []string{"List", "Broken artifact references", "Deprecated tasks", "Permissions audit", "Policy audit", "Validate release batch", "Inventory report"}
 	if len(readMenu) != len(want) {
 		t.Fatalf("read menu has %d entries, want %d", len(readMenu), len(want))
 	}
