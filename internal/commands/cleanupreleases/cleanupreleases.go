@@ -28,11 +28,15 @@ Protection (always applied, never deleted):
   - the newest --keep-latest releases of each pipeline (default 3)
   - the newest --keep-successful succeeded releases of each pipeline (default 0)
 Safety: nothing is deleted unless --apply is given; without it the command is a dry run. With --apply
-a confirmation prompt is shown unless -y is also given. Deletion is permanent. Releases that are
-still held by retention leases are refused by Azure DevOps and reported as errors.
+a confirmation prompt is shown unless -y is also given. Deleted releases cannot be restored with this
+tool; Azure DevOps keeps them for the project's "permanently destroy releases" period before they are
+destroyed for good. Releases still held by retention leases are refused and reported as errors.
 Statuses: succeeded = every started stage succeeded; failed = a stage was rejected or partially succeeded;
 canceled = a stage was canceled and none failed; notdeployed = nothing has been deployed yet.
 `
+
+// maxOlderThanDays bounds --older-than (100 years) so the age cutoff cannot overflow.
+const maxOlderThanDays = 36500
 
 var validStatus = map[string]bool{"succeeded": true, "failed": true, "canceled": true, "abandoned": true, "draft": true, "notdeployed": true}
 
@@ -85,6 +89,9 @@ func Main() {
 		os.Exit(2)
 	case r.olderThanDays <= 0 && len(r.statuses) == 0:
 		fmt.Fprintln(os.Stderr, "Error: specify --older-than and/or --status")
+		os.Exit(2)
+	case r.olderThanDays > maxOlderThanDays:
+		fmt.Fprintf(os.Stderr, "Error: --older-than must be at most %d days\n", maxOlderThanDays)
 		os.Exit(2)
 	case r.olderThanDays < 0 || r.keepLatest < 0 || r.keepSuccessful < 0 || *maxScan < 1:
 		fmt.Fprintln(os.Stderr, "Error: numeric options must not be negative (--max-scan at least 1)")
@@ -161,7 +168,7 @@ func selectForDeletion(releases []azuredevops.Release, r rules, now time.Time) [
 		}
 		if r.olderThanDays > 0 {
 			created, err := time.Parse(time.RFC3339, rel.CreatedOn)
-			if err != nil || now.Sub(created) < time.Duration(r.olderThanDays)*24*time.Hour {
+			if err != nil || created.After(now.AddDate(0, 0, -r.olderThanDays)) {
 				continue
 			}
 		}
@@ -179,6 +186,9 @@ func listAll(cfg azuredevops.Config, project string, defID, maxScan int) ([]azur
 		if err != nil {
 			return nil, err
 		}
+		if len(page) == 0 {
+			break
+		}
 		added := 0
 		for _, rel := range page {
 			if !seen[rel.ID] {
@@ -187,7 +197,10 @@ func listAll(cfg azuredevops.Config, project string, defID, maxScan int) ([]azur
 				added++
 			}
 		}
-		if added == 0 || len(page) < 100 {
+		if added == 0 {
+			return nil, fmt.Errorf("release paging returned only already-seen releases; refusing to continue with an incomplete list")
+		}
+		if len(page) < 100 {
 			break
 		}
 		continuation = page[len(page)-1].ID

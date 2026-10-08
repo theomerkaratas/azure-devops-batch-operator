@@ -334,7 +334,8 @@ Choose releases with `--older-than DAYS` and/or `--status` (`succeeded`, `failed
 `abandoned`, `draft`, `notdeployed`). Releases marked to be retained indefinitely and releases with a
 deployment in progress are never deleted, and the newest `--keep-latest` (default 3) releases and
 `--keep-successful` succeeded releases of each pipeline are always kept. Requires a `manage` token.
-Deletion is permanent:
+Deleted releases cannot be restored with this tool; Azure DevOps keeps them for the project's
+"permanently destroy releases" period before destroying them for good:
 
 ```console
 a22r cleanup-releases 'Example.Project\TEST' --older-than 90 --keep-successful 5

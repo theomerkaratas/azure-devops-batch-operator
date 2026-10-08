@@ -53,6 +53,8 @@ func Main() {
 	if err := fs.Parse(cliutil.ReorderArgs(os.Args[1:], valueFlags)); err != nil {
 		os.Exit(2)
 	}
+	set := map[string]bool{}
+	fs.Visit(func(f *flag.Flag) { set[f.Name] = true })
 	p := policy{days: *days, releases: *releases}
 	switch strings.ToLower(*retainBuild) {
 	case "":
@@ -70,7 +72,7 @@ func Main() {
 	case fs.NArg() != 1:
 		fs.Usage()
 		os.Exit(2)
-	case p.days < 0 || p.releases < 0:
+	case set["days"] && p.days < 1, set["releases"] && p.releases < 1:
 		fmt.Fprintln(os.Stderr, "Error: --days and --releases must be at least 1")
 		os.Exit(2)
 	case p.days == 0 && p.releases == 0 && p.retainBuild == nil:
@@ -86,11 +88,13 @@ func Main() {
 			stages = append(stages, s)
 		}
 	}
+	skipped := 0
 	mutate := func(_ azuredevops.Config, _ string, raw map[string]interface{}) []string {
 		lines, err := apply(raw, p, stages)
 		if err != nil {
 			name, _ := raw["name"].(string)
 			fmt.Printf("  - skipped %s: %v\n", name, err)
+			skipped++
 			return nil
 		}
 		return lines
@@ -98,6 +102,10 @@ func Main() {
 	opts := batchupdate.Options{Target: fs.Arg(0), Filter: *filter, Level: *level, DryRun: *dryRun, AutoYes: *yes}
 	if err := batchupdate.Run(opts, "Updated release retention policy", mutate); err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err)
+		os.Exit(1)
+	}
+	if skipped > 0 {
+		fmt.Fprintf(os.Stderr, "Error: %d pipeline(s) could not be updated (see \"skipped\" lines above)\n", skipped)
 		os.Exit(1)
 	}
 }

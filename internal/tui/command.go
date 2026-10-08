@@ -184,7 +184,7 @@ var writeCommandSpecs = []commandSpec{
 		},
 	},
 	{
-		id: "cleanup-releases", description: "Permanently deletes old release instances by age, status, and retention counts.",
+		id: "cleanup-releases", description: "Deletes old release instances by age, status, and retention counts (not restorable with this tool).",
 		newFields: func() []*field {
 			return []*field{
 				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true),
@@ -194,7 +194,7 @@ var writeCommandSpecs = []commandSpec{
 				textField("keep_successful", "Always keep newest N succeeded per pipeline", "0", false),
 				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
 				choiceField("level", "PAT level", []string{"manage"}, 0).withHelp(levelHelp),
-				boolField("dry_run", "Dry run (preview only)", true).withHelp("Yes: list what would be deleted. No: permanently delete the listed releases. Releases kept forever or in progress are never deleted."),
+				boolField("dry_run", "Dry run (preview only)", true).withHelp("Yes: list what would be deleted. No: delete the listed releases (they cannot be restored with this tool; Azure DevOps destroys them for good after the project's retention period). Releases kept forever or in progress are never deleted."),
 			}
 		},
 		buildArgs: func(v map[string]string) ([]string, error) {

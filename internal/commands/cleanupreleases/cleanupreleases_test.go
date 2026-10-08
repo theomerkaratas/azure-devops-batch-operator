@@ -72,3 +72,10 @@ func TestSelectProtections(t *testing.T) {
 		t.Fatalf("status rule: %v", byStatus)
 	}
 }
+
+func TestHugeOlderThanNeverSelectsRecent(t *testing.T) {
+	releases := []azuredevops.Release{rel(1, 0, "abandoned"), rel(2, 1, "abandoned")}
+	if got := selectForDeletion(releases, rules{olderThanDays: maxOlderThanDays}, now); len(got) != 0 {
+		t.Fatalf("recent releases selected: %v", ids(got))
+	}
+}
