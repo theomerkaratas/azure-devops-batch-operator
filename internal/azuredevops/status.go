@@ -20,6 +20,7 @@ type Release struct {
 	Status      string `json:"status"`
 	Reason      string `json:"reason"`
 	KeepForever bool   `json:"keepForever"`
+	Description string `json:"description"`
 	CreatedBy   struct {
 		DisplayName string `json:"displayName"`
 	} `json:"createdBy"`
@@ -125,4 +126,12 @@ func (c Config) ListReleasesPage(project string, definitionID, top, continuation
 func (c Config) DeleteRelease(project string, releaseID int) error {
 	url := fmt.Sprintf("%s/_apis/release/releases/%d?api-version=%s", c.releaseProjectBaseURL(project), releaseID, c.apiVersion())
 	return c.Delete(url)
+}
+
+// GetRelease reads one release with its per-stage statuses.
+func (c Config) GetRelease(project string, releaseID int) (Release, error) {
+	url := fmt.Sprintf("%s/_apis/release/releases/%d?api-version=%s", c.releaseProjectBaseURL(project), releaseID, c.apiVersion())
+	var rel Release
+	err := c.Get(url, &rel)
+	return rel, err
 }

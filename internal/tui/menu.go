@@ -33,6 +33,7 @@ type menuNode struct {
 var menuTree = []menuNode{
 	{label: "Create", description: "Create pipelines, releases, or local files.", children: []menuNode{
 		{label: "PowerShell pipeline", description: "Create a release pipeline from PowerShell scripts.", commandID: "create-powershell-pipeline"},
+		{label: "Orchestrate releases", description: "Create releases in waves with concurrency, waiting, retries, and a summary.", commandID: "orchestrate-releases"},
 		{label: "Trigger release", description: "Create releases for matching pipelines.", commandID: "trigger-release"},
 		{label: "Create files", description: "Create empty local files and folders.", commandID: "create-files"},
 	}},
@@ -54,6 +55,7 @@ var menuTree = []menuNode{
 		}},
 		{label: "Broken artifact references", description: "Find missing build pipelines, repos, branches, and service connections.", commandID: "detect-broken-artifact-references"},
 		{label: "Deprecated tasks", description: "Find deprecated, disabled, missing, or unsupported tasks.", commandID: "detect-deprecated-tasks"},
+		{label: "Permissions audit", description: "Report who can view, edit, administer, trigger, approve, or delete pipelines.", commandID: "audit-pipeline-permissions"},
 		{label: "Policy audit", description: "Audit release pipelines against a YAML policy.", commandID: "audit-pipeline-policy"},
 	}},
 	{label: "Compare", description: "Compare pipelines or whole folders.", children: []menuNode{
