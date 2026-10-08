@@ -108,9 +108,13 @@ func inspectDefinition(raw map[string]interface{}, requiredStages []string) []is
 		found[strings.ToLower(text(env, "name"))] = true
 		for _, phaseValue := range list(env["deployPhases"]) {
 			phase := object(phaseValue)
+			if !strings.EqualFold(text(phase, "phaseType"), "agentBasedDeployment") {
+				continue
+			}
 			input := object(phase["deploymentInput"])
-			// Non-agent phases (for example manual intervention) have no deploymentInput.
-			if input != nil && number(input["queueId"]) == 0 {
+			if input == nil {
+				out = append(out, issue{"ERROR", fmt.Sprintf("stage %q agent job %q has no deployment input", text(env, "name"), text(phase, "name"))})
+			} else if number(input["queueId"]) == 0 {
 				out = append(out, issue{"ERROR", fmt.Sprintf("stage %q job %q has no agent queue", text(env, "name"), text(phase, "name"))})
 			}
 		}
@@ -159,6 +163,13 @@ func activeIssues(releases []azuredevops.Release) []issue {
 	return out
 }
 
+func noMatchesError(failOnIssues bool) error {
+	if failOnIssues {
+		return fmt.Errorf("release batch validation found no matching pipelines")
+	}
+	return nil
+}
+
 func run(target, filter string, stages []string, top int, allowActive, failOnIssues bool, level string) error {
 	cfg, err := azuredevops.LoadConfig(level)
 	if err != nil {
@@ -170,7 +181,7 @@ func run(target, filter string, stages []string, top int, allowActive, failOnIss
 	}
 	if len(defs) == 0 {
 		fmt.Printf("No matching release pipelines found under `%s`.\n", target)
-		return nil
+		return noMatchesError(failOnIssues)
 	}
 	details, err := batchupdate.FetchDetails(cfg, project, defs)
 	if err != nil {

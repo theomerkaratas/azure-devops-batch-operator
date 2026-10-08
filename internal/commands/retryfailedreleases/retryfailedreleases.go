@@ -75,13 +75,30 @@ func retryable(status string, includeCanceled bool) bool {
 	}
 }
 
+func stageReached(status string) bool {
+	switch strings.ToLower(status) {
+	case "", "undefined", "notstarted":
+		return false
+	default:
+		return true
+	}
+}
+
 func selectJobs(pipeline string, releases []azuredevops.Release, stage string, allFailed, includeCanceled bool) []retryJob {
 	var jobs []retryJob
+	reached := map[string]bool{}
 	for _, rel := range releases {
 		var envs []azuredevops.ReleaseEnvironmentStatus
 		for _, env := range rel.Environments {
-			if retryable(env.Status, includeCanceled) && (stage == "" || strings.EqualFold(stage, env.Name)) {
+			if stage != "" && !strings.EqualFold(stage, env.Name) {
+				continue
+			}
+			key := strings.ToLower(env.Name)
+			if retryable(env.Status, includeCanceled) && !reached[key] {
 				envs = append(envs, env)
+			}
+			if stageReached(env.Status) {
+				reached[key] = true
 			}
 		}
 		if len(envs) == 0 {
