@@ -41,9 +41,11 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/triggerrelease"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineagentjob"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineapprovals"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineartifacts"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinedemands"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinegates"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineschedule"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinestagetriggers"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinevariablegroups"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelinevariables"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/tui"
@@ -87,6 +89,8 @@ var commands = map[string]func(){
 	"trigger-release":                    triggerrelease.Main,
 	"update-pipeline-agent-job":          updatepipelineagentjob.Main,
 	"update-pipeline-approvals":          updatepipelineapprovals.Main,
+	"update-pipeline-artifacts":          updatepipelineartifacts.Main,
+	"update-pipeline-stage-triggers":     updatepipelinestagetriggers.Main,
 	"update-pipeline-demands":            updatepipelinedemands.Main,
 	"update-pipeline-gates":              updatepipelinegates.Main,
 	"update-pipeline-schedule":           updatepipelineschedule.Main,

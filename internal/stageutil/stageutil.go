@@ -266,3 +266,52 @@ func Insert(stages []Map, stage Map, index int) []Map {
 func Remove(stages []Map, index int) []Map {
 	return append(stages[:index:index], stages[index+1:]...)
 }
+
+// Trigger kinds reported by TriggerOf.
+const (
+	TriggerRelease = "after-release"
+	TriggerStages  = "after-stages"
+	TriggerManual  = "manual"
+	TriggerOther   = "other"
+)
+
+// TriggerOf classifies how a stage starts and returns the stages it waits for.
+func TriggerOf(stage Map) (string, []string) {
+	conds, _ := stage["conditions"].([]interface{})
+	if deps := Dependencies(stage); len(deps) > 0 {
+		return TriggerStages, deps
+	}
+	if len(conds) == 0 {
+		return TriggerManual, nil
+	}
+	for _, c := range conds {
+		m, _ := c.(Map)
+		if n, _ := m["name"].(string); strings.EqualFold(n, releaseStarted) {
+			return TriggerRelease, nil
+		}
+	}
+	return TriggerOther, nil
+}
+
+// SetManual makes the stage start only when deployed by hand.
+func SetManual(stage Map) { stage["conditions"] = []interface{}{} }
+
+// SameSet reports whether a and b hold the same names, ignoring case and order.
+func SameSet(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	seen := map[string]int{}
+	for _, n := range a {
+		seen[strings.ToLower(n)]++
+	}
+	for _, n := range b {
+		seen[strings.ToLower(n)]--
+	}
+	for _, v := range seen {
+		if v != 0 {
+			return false
+		}
+	}
+	return true
+}

@@ -68,6 +68,8 @@ var menuTree = []menuNode{
 		{label: "Synchronize pipelines", description: "Copy selected components from a reference pipeline.", commandID: "synchronize-pipelines"},
 		{label: "Manage stages", description: "Add, clone, rename, remove, or reorder stages.", commandID: "manage-pipeline-stages"},
 		{label: "Copy a stage", description: "Copy one stage between pipelines.", commandID: "copy-pipeline-stage"},
+		{label: "Stage triggers", description: "Set when stages start: after release, after stages, or manual.", commandID: "update-pipeline-stage-triggers"},
+		{label: "Artifact sources", description: "Replace build sources, branches, projects, or aliases.", commandID: "update-pipeline-artifacts"},
 		{label: "Pipeline variable groups", description: "Link or unlink shared variable groups.", commandID: "update-pipeline-variable-groups"},
 		{label: "Enforce pipeline policy", description: "Fix release pipelines to comply with a YAML policy.", commandID: "enforce-pipeline-policy"},
 	}},

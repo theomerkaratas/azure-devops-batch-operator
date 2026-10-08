@@ -221,6 +221,8 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `trigger-release`
 - `update-pipeline-agent-job`
 - `update-pipeline-approvals`
+- `update-pipeline-artifacts`
+- `update-pipeline-stage-triggers`
 - `update-pipeline-demands`
 - `update-pipeline-gates`
 - `update-pipeline-schedule`
@@ -259,6 +261,23 @@ must be in the same project as the targets, and masked secret values must be set
 ```console
 a22r copy-pipeline-stage 'Example.Project\TEST' \
   --source 'Example.Project\GOLDEN\Deploy' --stage Production --on-existing replace --dry-run
+```
+
+Change when stages start with `update-pipeline-stage-triggers`: `after-release`, `after-stages`
+(with `--after QA,Perf`), `manual`, or `sequential` to chain every stage after the one before it.
+Use `--stage` to limit the change; pipelines where stage order would become invalid are skipped:
+
+```console
+a22r update-pipeline-stage-triggers 'Example.Project\TEST' --trigger sequential --dry-run
+```
+
+Replace build artifact sources in bulk with `update-pipeline-artifacts`. Match by alias, build
+pipeline, project, or branch, then set a new build pipeline, project, branch, or alias
+(`--rewrite-references` also updates `$(Release.Artifacts.<alias>.*)` usages):
+
+```console
+a22r update-pipeline-artifacts 'Example.Project\TEST' \
+  --match-definition OldBuild --set-definition NewBuild --dry-run
 ```
 
 Link or unlink shared variable groups by numeric Azure DevOps group ID:
