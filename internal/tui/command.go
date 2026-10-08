@@ -930,6 +930,32 @@ var writeCommandSpecs = []commandSpec{
 		},
 	},
 	{
+		id:          "resume-batch",
+		description: "Finishes an interrupted or partly failed batch operation from its saved manifest.",
+		newFields: func() []*field {
+			return []*field{
+				textField("manifest", "Manifest ID", "e.g. 20260101-120000-ab12cd", true).
+					withHelp("Printed by the original operation; list saved manifests with list-batch-manifests. Already updated pipelines are not touched again."),
+				choiceField("level", "PAT level", writeLevels(), 0).withHelp(levelHelp),
+				boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) { return writeTail([]string{v["manifest"]}, v), nil },
+	},
+	{
+		id:          "rollback-batch",
+		description: "Restores the definitions captured before an earlier batch operation.",
+		newFields: func() []*field {
+			return []*field{
+				textField("manifest", "Manifest ID", "e.g. 20260101-120000-ab12cd", true).
+					withHelp("Printed by the original operation. Pipelines edited since the operation are skipped, never overwritten."),
+				choiceField("level", "PAT level", writeLevels(), 0).withHelp(levelHelp),
+				boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) { return writeTail([]string{v["manifest"]}, v), nil },
+	},
+	{
 		id:          "trigger-release",
 		description: "Creates new releases for all release pipelines under a path (batch).",
 		newFields: func() []*field {
@@ -1165,6 +1191,22 @@ var commandSpecs = []commandSpec{
 		},
 		buildArgs: func(v map[string]string) ([]string, error) {
 			return []string{v["pipeline_path"], "--level", v["level"]}, nil
+		},
+	},
+	{
+		id:          "list-batch-manifests",
+		description: "Lists saved batch operation manifests, or shows one in detail.",
+		newFields: func() []*field {
+			return []*field{
+				textField("manifest", "Manifest ID (optional)", "empty = list all", false).
+					withHelp("Show one manifest's pipelines, changes, results and failures."),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			if v["manifest"] == "" {
+				return nil, nil
+			}
+			return []string{v["manifest"]}, nil
 		},
 	},
 	{

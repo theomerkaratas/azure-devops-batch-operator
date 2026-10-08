@@ -6,11 +6,13 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
 
 	"github.com/omerkaratas/azure-devops-go-automations/internal/azuredevops"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/manifest"
 )
 
 // Options are the settings common to all batch commands.
@@ -58,11 +60,12 @@ func Confirm(prompt string) bool {
 }
 
 type planItem struct {
-	raw   map[string]interface{}
-	id    int
-	name  string
-	path  string
-	lines []string
+	raw      map[string]interface{}
+	original map[string]interface{}
+	id       int
+	name     string
+	path     string
+	lines    []string
 }
 
 // Run selects the pipelines, applies mutate to each, prints the plan and (unless dry-run) saves.
@@ -98,12 +101,16 @@ func Run(o Options, comment string, mutate Mutator) error {
 		if path == "" {
 			path = `\`
 		}
+		original, err := manifest.Clone(raw)
+		if err != nil {
+			return err
+		}
 		lines := mutate(cfg, project, raw)
 		if len(lines) == 0 {
 			unchanged++
 			continue
 		}
-		toUpdate = append(toUpdate, planItem{raw: raw, id: d.ID, name: d.Name, path: path, lines: lines})
+		toUpdate = append(toUpdate, planItem{raw: raw, original: original, id: d.ID, name: d.Name, path: path, lines: lines})
 	}
 
 	fmt.Println("\n=== PLANNED CHANGES ===")
@@ -140,19 +147,43 @@ func Run(o Options, comment string, mutate Mutator) error {
 		}
 	}
 
-	ok, failed := 0, 0
+	m, err := manifest.New(filepath.Base(os.Args[0]), o.Target, o.Filter, project, comment)
+	if err != nil {
+		return err
+	}
 	for _, p := range toUpdate {
+		m.Entries = append(m.Entries, manifest.Entry{
+			DefinitionID: p.id, Name: p.name, Path: p.path, OriginalRevision: manifest.Revision(p.original),
+			Changes: p.lines, Original: p.original, Planned: p.raw, Status: manifest.StatusPending,
+		})
+	}
+	// Saved before the first write so an interrupted run can be resumed or rolled back.
+	if err := m.Save(); err != nil {
+		return fmt.Errorf("save operation manifest: %w", err)
+	}
+	fmt.Printf("Manifest: %s\n", m.Path())
+
+	ok, failed := 0, 0
+	for i, p := range toUpdate {
+		e := &m.Entries[i]
 		updated, err := cfg.UpdateDefinitionRaw(project, p.raw, comment)
 		if err != nil {
 			fmt.Printf("  x %s\\%s ERROR: %v\n", p.path, p.name, err)
+			e.Status, e.Error = manifest.StatusFailed, err.Error()
 			failed++
-			continue
+		} else {
+			fmt.Printf("  ok %s\\%s updated (rev=%v)\n", p.path, p.name, updated["revision"])
+			e.Status, e.NewRevision = manifest.StatusSucceeded, manifest.Revision(updated)
+			ok++
 		}
-		fmt.Printf("  ok %s\\%s updated (rev=%v)\n", p.path, p.name, updated["revision"])
-		ok++
+		if err := m.Save(); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: could not update manifest: %v\n", err)
+		}
 	}
 	fmt.Printf("\n=== DONE ===\nSucceeded: %d | Failed: %d | Skipped: %d\n", ok, failed, unchanged)
+	fmt.Printf("Undo this operation with: a22r rollback-batch %s\n", m.ID)
 	if failed > 0 {
+		fmt.Printf("Retry the failed pipelines with: a22r resume-batch %s\n", m.ID)
 		return fmt.Errorf("%d pipeline update(s) failed", failed)
 	}
 	return nil

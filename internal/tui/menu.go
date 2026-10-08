@@ -89,6 +89,9 @@ var menuTree = []menuNode{
 	{label: "Backup", description: "Back up or restore release pipeline definitions.", children: []menuNode{
 		{label: "Back up pipelines", description: "Save matching pipelines' definitions to local JSON files.", commandID: "backup-pipelines"},
 		{label: "Restore pipelines", description: "Recreate or overwrite pipelines from backup JSON files.", commandID: "restore-pipelines"},
+		{label: "Resume batch operation", description: "Finish an interrupted or partly failed batch update from its manifest.", commandID: "resume-batch"},
+		{label: "Roll back batch operation", description: "Restore definitions captured before an earlier batch update.", commandID: "rollback-batch"},
+		{label: "Batch manifests", description: "List saved batch operation manifests.", commandID: "list-batch-manifests"},
 	}},
 }
 
