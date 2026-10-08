@@ -88,3 +88,27 @@ func TestReportFindings(t *testing.T) {
 		t.Fatalf("%+v", counts)
 	}
 }
+
+func TestChildAllowOverridesInheritedDeny(t *testing.T) {
+	pipes := []pipeline{{1, "A", `\F`}, {2, "B", `\F`}}
+	acls := []azuredevops.ACL{
+		acl("P/F", true, ace("users", 0, edit)),           // folder denies edit
+		acl("P/F/1", true, ace("users", edit, 0)),         // pipeline A explicitly allows it
+		acl("P/F/2", true, ace("users", view|edit, edit)), // same-level allow+deny: deny wins
+	}
+	res := analyze("P", pipes, acls, bits)
+	has := func(id int, cap string) bool {
+		for _, g := range res.groups[res.indexOf(id)].grants {
+			if g.caps[cap] {
+				return true
+			}
+		}
+		return false
+	}
+	if !has(1, "edit") {
+		t.Fatal("child explicit allow must override parent deny")
+	}
+	if has(2, "edit") || !has(2, "view") {
+		t.Fatal("same-level deny must win and view must remain")
+	}
+}

@@ -166,3 +166,34 @@ func TestStopOnFailureSkipsLaterWavesAndConcurrencyIsBounded(t *testing.T) {
 		t.Fatalf("concurrency exceeded: %d", g.maxActive)
 	}
 }
+
+func TestPendingFollowerStageKeepsWaiting(t *testing.T) {
+	follower := azuredevops.ReleaseEnvironmentStatus{Name: "QA", Status: "notStarted"}
+	follower.Conditions = append(follower.Conditions, struct {
+		Name          string      `json:"name"`
+		ConditionType interface{} `json:"conditionType"`
+	}{"Dev", "environmentState"})
+	manual := azuredevops.ReleaseEnvironmentStatus{Name: "Prod", Status: "notStarted"}
+	dev := azuredevops.ReleaseEnvironmentStatus{Name: "Dev", Status: "succeeded"}
+
+	if _, done := deploymentOutcome(azuredevops.Release{Environments: []azuredevops.ReleaseEnvironmentStatus{dev, follower}}); done {
+		t.Fatal("a stage waiting for a succeeded predecessor must keep the release open")
+	}
+	if outcome, done := deploymentOutcome(azuredevops.Release{Environments: []azuredevops.ReleaseEnvironmentStatus{dev, manual}}); !done || outcome != "succeeded" {
+		t.Fatalf("manual stages must not block: %s %v", outcome, done)
+	}
+	rejected := azuredevops.ReleaseEnvironmentStatus{Name: "Dev", Status: "rejected"}
+	if outcome, done := deploymentOutcome(azuredevops.Release{Environments: []azuredevops.ReleaseEnvironmentStatus{rejected, follower}}); !done || outcome != "failed" {
+		t.Fatalf("failure must end the wait: %s %v", outcome, done)
+	}
+}
+
+func TestLastRetryChecksForCreatedRelease(t *testing.T) {
+	f := newFake()
+	f.createErr[1] = []error{errCreatedButFailed, errCreatedButFailed, errCreatedButFailed}
+	o := opts()
+	o.retries = 0 // the only attempt fails after the server created the release
+	if r := deployOne(f, defs(1)[0], "P", 1, o, noSleep); r.status != "created" {
+		t.Fatalf("status %s", r.status)
+	}
+}

@@ -10,6 +10,12 @@ type ReleaseEnvironmentStatus struct {
 	ID     int    `json:"id"`
 	Name   string `json:"name"`
 	Status string `json:"status"`
+	// Conditions are the stage's start triggers; a stage triggered by another stage has a condition
+	// of type environmentState.
+	Conditions []struct {
+		Name          string      `json:"name"`
+		ConditionType interface{} `json:"conditionType"`
+	} `json:"conditions"`
 }
 
 // Release is a release run, with its per-stage statuses.

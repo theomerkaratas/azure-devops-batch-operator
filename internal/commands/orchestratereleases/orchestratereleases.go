@@ -285,6 +285,12 @@ func deployOne(a api, d azuredevops.ReleaseDefinition, name string, wave int, o 
 		sleep(delay)
 		delay *= 2
 	}
+	if err != nil && isTransient(err) {
+		// The last attempt may have created the release before the error was returned.
+		if found := findTagged(a, d.ID, o.runTag); found != nil {
+			rel, err = *found, nil
+		}
+	}
 	if err != nil {
 		res.status, res.detail = "create-failed", err.Error()
 		fmt.Printf("  x %s: create failed: %v\n", name, err)
@@ -340,7 +346,7 @@ func isTransient(err error) bool {
 
 // deploymentOutcome classifies a release's stage statuses: done reports whether nothing is still running.
 func deploymentOutcome(r azuredevops.Release) (outcome string, done bool) {
-	succeeded, failed, active, started := false, false, false, false
+	succeeded, failed, active, started, pending := false, false, false, false, false
 	for _, e := range r.Environments {
 		switch strings.ToLower(e.Status) {
 		case "inprogress", "queued", "scheduled":
@@ -349,10 +355,17 @@ func deploymentOutcome(r azuredevops.Release) (outcome string, done bool) {
 			succeeded, started = true, true
 		case "rejected", "partiallysucceeded", "canceled":
 			failed, started = true, true
+		case "notstarted":
+			if followsStage(e) {
+				pending = true
+			}
 		}
 	}
 	switch {
 	case active:
+		return "", false
+	case pending && !failed && succeeded:
+		// A stage that waits for another stage has not started yet although its predecessor finished.
 		return "", false
 	case failed:
 		return "failed", true
@@ -362,6 +375,24 @@ func deploymentOutcome(r azuredevops.Release) (outcome string, done bool) {
 		return "idle", true
 	}
 	return "idle", true
+}
+
+// followsStage reports whether a stage not yet started is triggered by another stage, so it will
+// start by itself. Manually started stages are not pending.
+func followsStage(e azuredevops.ReleaseEnvironmentStatus) bool {
+	for _, c := range e.Conditions {
+		switch t := c.ConditionType.(type) {
+		case float64:
+			if t == 2 {
+				return true
+			}
+		case string:
+			if strings.EqualFold(t, "environmentState") || t == "2" {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // waitForRelease polls until the release is done, fails, or the timeout is reached. The first

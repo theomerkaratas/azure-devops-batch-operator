@@ -165,7 +165,17 @@ var writeCommandSpecs = []commandSpec{
 		},
 		buildArgs: func(v map[string]string) ([]string, error) {
 			args := []string{v["target"]}
-			for _, opt := range [][2]string{{"--wave-size", "wave_size"}, {"--concurrency", "concurrency"}, {"--wave-delay", "wave_delay"}, {"--timeout", "timeout"}, {"--retries", "retries"}} {
+			for _, opt := range [][3]string{{"--wave-size", "wave_size", "1"}, {"--concurrency", "concurrency", "0"}, {"--retries", "retries", "0"}} {
+				if v[opt[1]] == "" {
+					continue
+				}
+				min, _ := strconv.Atoi(opt[2])
+				if n, err := strconv.Atoi(v[opt[1]]); err != nil || n < min {
+					return nil, fmt.Errorf("invalid %s %q: expected a whole number of at least %d", opt[1], v[opt[1]], min)
+				}
+				args = append(args, opt[0], v[opt[1]])
+			}
+			for _, opt := range [][2]string{{"--wave-delay", "wave_delay"}, {"--timeout", "timeout"}} {
 				if v[opt[1]] != "" {
 					if n, err := strconv.ParseFloat(v[opt[1]], 64); err != nil || n < 0 {
 						return nil, fmt.Errorf("invalid %s %q", opt[1], v[opt[1]])

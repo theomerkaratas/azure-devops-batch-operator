@@ -18,7 +18,7 @@ const usageEpilog = `
 Examples:
   audit-pipeline-permissions 'Example.Project\TEST'
   audit-pipeline-permissions 'Example.Project\TEST\CONFIG' --broad-groups 'Valid Users,Contributors' --fail-on-findings
-Capabilities reported per user or group (effective, deny wins, inheritance cut where a folder or
+Capabilities reported per user or group (effective: the nearest explicit setting wins, deny beats allow at the same level, inheritance cut where a folder or
 pipeline does not inherit): view, edit, administer, trigger, approve, delete.
 Findings:
   BROAD         A broad group (name contains one of --broad-groups; default "Valid Users,Everyone") can
@@ -235,7 +235,9 @@ func analyze(projectID string, pipelines []pipeline, acls []azuredevops.ACL, cap
 				}
 			}
 		}
-		allow, deny := map[string]int{}, map[string]int{}
+		// For every identity and permission bit the nearest explicit assignment decides, scanning from the
+		// pipeline up to the first token that does not inherit; at one token deny beats allow.
+		aces := map[string][]azuredevops.ACE{} // descriptor -> ACEs ordered from the project down
 		for _, t := range tokens[start:] {
 			acl, ok := byToken[strings.ToLower(t)]
 			if !ok {
@@ -246,17 +248,21 @@ func analyze(projectID string, pipelines []pipeline, acls []azuredevops.ACL, cap
 				if d == "" {
 					d = key
 				}
-				allow[d] |= ace.Allow
-				deny[d] |= ace.Deny
+				aces[d] = append(aces[d], ace)
 			}
 		}
 		var grants []grant
-		for d, a := range allow {
-			effective := a &^ deny[d]
+		for d, list := range aces {
 			caps := map[string]bool{}
 			for bit, c := range capsByBit {
-				if effective&bit != 0 {
-					caps[c] = true
+				for i := len(list) - 1; i >= 0; i-- {
+					if (list[i].Allow|list[i].Deny)&bit == 0 {
+						continue
+					}
+					if list[i].Deny&bit == 0 {
+						caps[c] = true
+					}
+					break
 				}
 			}
 			if len(caps) > 0 {
