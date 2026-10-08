@@ -227,6 +227,7 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `copy-pipeline-stage`
 - `synchronize-pipelines`
 - `orchestrate-releases`
+- `promote-releases`
 - `redeploy-release-stages`
 - `trigger-release`
 - `update-pipeline-agent-job`
@@ -244,6 +245,7 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `detect-pipeline-drift`
 - `resume-batch`
 - `rollback-batch`
+- `rollback-releases`
 - `list-batch-manifests`
 
 Use `--dry-run` before applying batch changes. Commands that make changes may also require `--yes` (or `-y`) to skip interactive confirmation.

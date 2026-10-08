@@ -37,6 +37,8 @@ var menuTree = []menuNode{
 		{label: "Trigger release", description: "Create releases for matching pipelines.", commandID: "trigger-release"},
 		{label: "Retry failed releases", description: "Redeploy failed stages across existing releases.", commandID: "retry-failed-releases"},
 		{label: "Redeploy release stages", description: "Redeploy a completed stage across existing releases.", commandID: "redeploy-release-stages"},
+		{label: "Promote releases", description: "Start a target stage after a source stage succeeds.", commandID: "promote-releases"},
+		{label: "Rollback releases", description: "Create releases using artifacts from the previous successful release.", commandID: "rollback-releases"},
 		{label: "Create files", description: "Create empty local files and folders.", commandID: "create-files"},
 	}},
 	{label: "Clone", description: "Copy a release pipeline or an entire folder tree.", children: []menuNode{

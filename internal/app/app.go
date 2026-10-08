@@ -40,6 +40,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/managepipelinestages"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/managereleaseapprovals"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/orchestratereleases"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/promotereleases"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/redeployreleasestages"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/renameormovepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/replacepipelinecontent"
@@ -49,6 +50,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/resumebatch"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/retryfailedreleases"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/rollbackbatch"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/rollbackreleases"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/synchronizepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/triggerrelease"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/updatepipelineagentjob"
@@ -76,6 +78,7 @@ var version = "dev"
 var commands = map[string]func(){
 	"audit-pipeline-permissions":         auditpipelinepermissions.Main,
 	"orchestrate-releases":               orchestratereleases.Main,
+	"promote-releases":                   promotereleases.Main,
 	"audit-pipeline-policy":              auditpipelinepolicy.Main,
 	"backup-pipelines":                   backuppipelines.Main,
 	"detect-pipeline-drift":              detectpipelinedrift.Main,
@@ -84,6 +87,7 @@ var commands = map[string]func(){
 	"retry-failed-releases":              retryfailedreleases.Main,
 	"resume-batch":                       resumebatch.Main,
 	"rollback-batch":                     rollbackbatch.Main,
+	"rollback-releases":                  rollbackreleases.Main,
 	"list-batch-manifests":               listbatchmanifests.Main,
 	"synchronize-pipelines":              synchronizepipelines.Main,
 	"cancel-releases":                    cancelreleases.Main,
@@ -165,6 +169,7 @@ var commandDescriptions = map[string]string{
 	"manage-pipeline-stages":             "Add, clone, rename, remove, or reorder stages across pipelines.",
 	"manage-release-approvals":           "Approve or reject pending approvals across existing releases.",
 	"orchestrate-releases":               "Create releases in controlled waves with concurrency, retries, and monitoring.",
+	"promote-releases":                   "Promote existing releases after a source stage succeeds.",
 	"redeploy-release-stages":            "Redeploy a completed stage across existing releases in bulk.",
 	"rename-or-move-pipelines":           "Rename matching pipelines or move them to another release folder.",
 	"replace-pipeline-content":           "Replace matching text in scripts, step titles, or pipeline variables.",
@@ -174,6 +179,7 @@ var commandDescriptions = map[string]string{
 	"resume-batch":                       "Resume pending or failed definition updates from a saved manifest.",
 	"retry-failed-releases":              "Retry failed stages from recent releases across matching pipelines.",
 	"rollback-batch":                     "Restore pipeline definitions captured before a batch update.",
+	"rollback-releases":                  "Create releases pinned to artifacts from the previous successful release.",
 	"synchronize-pipelines":              "Copy selected components from a reference pipeline to matching pipelines.",
 	"trigger-release":                    "Create releases for every matching classic release pipeline.",
 	"update-pipeline-agent-job":          "Update agent pool, timeout, and related job settings across pipelines.",
