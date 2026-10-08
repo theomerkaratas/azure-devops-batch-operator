@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/omerkaratas/azure-devops-go-automations/internal/azuredevops"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/auditpipelinepermissions"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/auditpipelinepolicy"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/backuppipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/cancelreleases"
@@ -36,6 +37,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listreleases"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listreleasestatus"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/managepipelinestages"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/orchestratereleases"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/renameormovepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/replacepipelinecontent"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/replacepipelinevariablegroups"
@@ -64,6 +66,8 @@ const Name = "a22r"
 var version = "dev"
 
 var commands = map[string]func(){
+	"audit-pipeline-permissions":         auditpipelinepermissions.Main,
+	"orchestrate-releases":               orchestratereleases.Main,
 	"audit-pipeline-policy":              auditpipelinepolicy.Main,
 	"backup-pipelines":                   backuppipelines.Main,
 	"restore-pipelines":                  restorepipelines.Main,

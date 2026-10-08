@@ -150,6 +150,52 @@ func init() { commandSpecs = append(commandSpecs, writeCommandSpecs...) }
 
 var writeCommandSpecs = []commandSpec{
 	{
+		id: "orchestrate-releases", description: "Creates releases in controlled waves with concurrency, waiting, retries, and a summary.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true),
+				textField("wave_size", "Pipelines per wave", "5", false), textField("concurrency", "Max simultaneous per wave (optional)", "e.g. 2", false),
+				textField("wave_delay", "Seconds between waves", "0", false),
+				boolField("wait", "Wait for each deployment to finish", false), boolField("stop", "Stop after the first failure", true),
+				textField("timeout", "Wait timeout (minutes)", "60", false), textField("retries", "Retries for transient errors", "2", false),
+				textField("stage", "Manual stages (;-separated, optional)", "e.g. Production", false),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				choiceField("level", "PAT level", []string{"read-write", "manage"}, 0).withHelp(levelHelp), boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"]}
+			for _, opt := range [][3]string{{"--wave-size", "wave_size", "1"}, {"--concurrency", "concurrency", "0"}, {"--retries", "retries", "0"}} {
+				if v[opt[1]] == "" {
+					continue
+				}
+				min, _ := strconv.Atoi(opt[2])
+				if n, err := strconv.Atoi(v[opt[1]]); err != nil || n < min {
+					return nil, fmt.Errorf("invalid %s %q: expected a whole number of at least %d", opt[1], v[opt[1]], min)
+				}
+				args = append(args, opt[0], v[opt[1]])
+			}
+			for _, opt := range [][2]string{{"--wave-delay", "wave_delay"}, {"--timeout", "timeout"}} {
+				if v[opt[1]] != "" {
+					if n, err := strconv.ParseFloat(v[opt[1]], 64); err != nil || n < 0 {
+						return nil, fmt.Errorf("invalid %s %q", opt[1], v[opt[1]])
+					}
+					args = append(args, opt[0], v[opt[1]])
+				}
+			}
+			if v["wait"] == "yes" {
+				args = append(args, "--wait")
+			}
+			if v["stop"] == "yes" {
+				args = append(args, "--stop-on-failure")
+			}
+			for _, s := range splitList(v["stage"]) {
+				args = append(args, "--stage", s)
+			}
+			return writeTail(args, v), nil
+		},
+	},
+	{
 		id: "update-pipeline-retention", description: "Standardizes release retention (days, release count, build retention) per stage.",
 		newFields: func() []*field {
 			return []*field{
@@ -925,6 +971,35 @@ var writeCommandSpecs = []commandSpec{
 func writeLevels() []string { return []string{"read-write", "manage"} }
 
 var commandSpecs = []commandSpec{
+	{
+		id:          "audit-pipeline-permissions",
+		description: "Reports who can view, edit, administer, trigger, approve, or delete pipelines and flags broad or inconsistent permissions.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true).
+					withHelp("Folder or single pipeline path to audit."),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				textField("broad", "Broad group name fragments (comma-separated)", "Valid Users,Everyone", false).
+					withHelp("Groups whose name contains one of these are flagged when they can edit, administer, delete, or manage approvers."),
+				boolField("fail", "Fail when findings exist", false).
+					withHelp("Yes: return a failed command status for broad or inconsistent permissions, useful for CI."),
+				choiceField("level", "PAT level", readLevels(), 0).withHelp(levelHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"]}
+			if v["filter"] != "" {
+				args = append(args, "--filter", v["filter"])
+			}
+			if v["broad"] != "" {
+				args = append(args, "--broad-groups", v["broad"])
+			}
+			if v["fail"] == "yes" {
+				args = append(args, "--fail-on-findings")
+			}
+			return append(args, "--level", v["level"]), nil
+		},
+	},
 	{
 		id:          "detect-deprecated-tasks",
 		description: "Finds deprecated, disabled, missing, or unsupported task versions in release pipelines.",

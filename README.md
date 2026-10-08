@@ -192,6 +192,7 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 
 ## Commands
 
+- `audit-pipeline-permissions`
 - `audit-pipeline-policy`
 - `cancel-releases`
 - `cleanup-releases`
@@ -223,6 +224,7 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `manage-pipeline-stages`
 - `copy-pipeline-stage`
 - `synchronize-pipelines`
+- `orchestrate-releases`
 - `trigger-release`
 - `update-pipeline-agent-job`
 - `update-pipeline-approvals`
@@ -340,6 +342,29 @@ Deleted releases cannot be restored with this tool; Azure DevOps keeps them for 
 ```console
 a22r cleanup-releases 'Example.Project\TEST' --older-than 90 --keep-successful 5
 a22r cleanup-releases 'Example.Project\TEST' --older-than 90 --keep-successful 5 --apply
+```
+
+Roll out releases in controlled waves with `orchestrate-releases`. Pipelines are split into waves
+of `--wave-size`; `--concurrency` bounds simultaneous releases within a wave and `--wave-delay`
+pauses between waves. `--wait` waits for each deployment (`--timeout` minutes), `--stop-on-failure`
+stops starting new releases after a failure, and transient errors (HTTP 429/5xx, network) are retried
+with backoff (`--retries`). Each release is tagged so a retry never creates a duplicate. A summary of
+every pipeline is printed at the end and the exit code is 1 if anything failed:
+
+```console
+a22r orchestrate-releases 'Example.Project\TEST' --wave-size 5 --wave-delay 60 --dry-run
+a22r orchestrate-releases 'Example.Project\TEST' --wave-size 3 --concurrency 2 --wait --stop-on-failure -y
+```
+
+Audit who can view, edit, administer, trigger, approve, and delete release pipelines with
+`audit-pipeline-permissions`. Effective permissions (deny wins, inheritance honoured) are grouped into
+permission sets, and findings flag `BROAD` grants to groups such as "Valid Users" (`--broad-groups`),
+`INCONSISTENT` permissions within a folder, and `NO-INHERIT` folders or pipelines. Group members are not
+expanded, and the token must be allowed to read security information. `--fail-on-findings` returns
+exit code 1 for CI:
+
+```console
+a22r audit-pipeline-permissions 'Example.Project\TEST' --broad-groups 'Valid Users,Contributors'
 ```
 
 Link or unlink shared variable groups by numeric Azure DevOps group ID:
