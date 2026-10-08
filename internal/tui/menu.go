@@ -74,12 +74,14 @@ var menuTree = []menuNode{
 		{label: "Artifact sources", description: "Replace build sources, branches, projects, or aliases.", commandID: "update-pipeline-artifacts"},
 		{label: "Continuous deployment", description: "Enable, disable, or filter artifact-triggered releases.", commandID: "update-pipeline-cd-triggers"},
 		{label: "Upgrade task versions", description: "Move a task to another major version after an input check.", commandID: "upgrade-pipeline-tasks"},
+		{label: "Release retention", description: "Standardize days, release count, and build retention per stage.", commandID: "update-pipeline-retention"},
 		{label: "Pipeline variable groups", description: "Link or unlink shared variable groups.", commandID: "update-pipeline-variable-groups"},
 		{label: "Enforce pipeline policy", description: "Fix release pipelines to comply with a YAML policy.", commandID: "enforce-pipeline-policy"},
 	}},
 	{label: "Delete", description: "Delete pipelines or exactly named steps.", children: []menuNode{
 		{label: "Release pipelines", description: "Permanently delete matching release pipelines.", commandID: "delete-pipelines"},
 		{label: "Pipeline steps", description: "Delete exactly named steps from matching release pipelines.", commandID: "delete-pipeline-steps"},
+		{label: "Old releases", description: "Delete old release instances by age, status, and retention counts.", commandID: "cleanup-releases"},
 	}},
 	{label: "Cancel", description: "Cancel deployments and optionally abandon releases.", commandID: "cancel-releases"},
 	{label: "Backup", description: "Back up or restore release pipeline definitions.", children: []menuNode{

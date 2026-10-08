@@ -194,6 +194,7 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 
 - `audit-pipeline-policy`
 - `cancel-releases`
+- `cleanup-releases`
 - `clone-pipeline`
 - `clone-folder`
 - `compare-pipelines`
@@ -228,6 +229,7 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `update-pipeline-artifacts`
 - `update-pipeline-stage-triggers`
 - `update-pipeline-demands`
+- `update-pipeline-retention`
 - `update-pipeline-gates`
 - `update-pipeline-schedule`
 - `update-pipeline-variables`
@@ -317,6 +319,26 @@ for enabled steps; `--fail-on-findings` returns exit code 1 for CI:
 
 ```console
 a22r detect-deprecated-tasks 'Example.Project\TEST' --include-outdated
+```
+
+Standardize release retention with `update-pipeline-retention`: `--days`, `--releases`, and
+`--retain-build true|false`, for every stage or only the ones named with `--stage`. Only the values
+you pass are changed, and the organization's maximum retention settings still apply:
+
+```console
+a22r update-pipeline-retention 'Example.Project\TEST' --days 30 --releases 5 --retain-build=true --dry-run
+```
+
+Delete old release instances with `cleanup-releases`. It is a **dry run unless `--apply` is given**.
+Choose releases with `--older-than DAYS` and/or `--status` (`succeeded`, `failed`, `canceled`,
+`abandoned`, `draft`, `notdeployed`). Releases marked to be retained indefinitely and releases with a
+deployment in progress are never deleted, and the newest `--keep-latest` (default 3) releases and
+`--keep-successful` succeeded releases of each pipeline are always kept. Requires a `manage` token.
+Deletion is permanent:
+
+```console
+a22r cleanup-releases 'Example.Project\TEST' --older-than 90 --keep-successful 5
+a22r cleanup-releases 'Example.Project\TEST' --older-than 90 --keep-successful 5 --apply
 ```
 
 Link or unlink shared variable groups by numeric Azure DevOps group ID:

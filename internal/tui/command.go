@@ -150,6 +150,70 @@ func init() { commandSpecs = append(commandSpecs, writeCommandSpecs...) }
 
 var writeCommandSpecs = []commandSpec{
 	{
+		id: "update-pipeline-retention", description: "Standardizes release retention (days, release count, build retention) per stage.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true),
+				textField("days", "Days to keep (optional)", "e.g. 30", false), textField("releases", "Releases to keep (optional)", "e.g. 5", false),
+				choiceField("retain_build", "Retain associated builds", []string{"unchanged", "true", "false"}, 0),
+				textField("stage", "Stages (comma-separated, optional)", "e.g. Production", false).withHelp("Leave empty to change every stage."),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				choiceField("level", "PAT level", []string{"read-write", "manage"}, 0).withHelp(levelHelp), boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"]}
+			for _, opt := range [][2]string{{"--days", "days"}, {"--releases", "releases"}} {
+				if v[opt[1]] != "" {
+					if n, err := strconv.Atoi(v[opt[1]]); err != nil || n <= 0 {
+						return nil, fmt.Errorf("invalid %s %q", opt[1], v[opt[1]])
+					}
+					args = append(args, opt[0], v[opt[1]])
+				}
+			}
+			if v["retain_build"] != "unchanged" {
+				args = append(args, "--retain-build", v["retain_build"])
+			}
+			if v["stage"] != "" {
+				args = append(args, "--stage", v["stage"])
+			}
+			if v["days"] == "" && v["releases"] == "" && v["retain_build"] == "unchanged" {
+				return nil, fmt.Errorf("set days, releases, or build retention")
+			}
+			return writeTail(args, v), nil
+		},
+	},
+	{
+		id: "cleanup-releases", description: "Permanently deletes old release instances by age, status, and retention counts.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true),
+				textField("older_than", "Older than (days, optional)", "e.g. 90", false),
+				textField("status", "Statuses (comma-separated, optional)", "succeeded,failed,canceled,abandoned,draft,notdeployed", false).withHelp("At least one of 'older than' or statuses is required."),
+				textField("keep_latest", "Always keep newest N per pipeline", "3", false),
+				textField("keep_successful", "Always keep newest N succeeded per pipeline", "0", false),
+				textField("filter", "Pipeline name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				choiceField("level", "PAT level", []string{"manage"}, 0).withHelp(levelHelp),
+				boolField("dry_run", "Dry run (preview only)", true).withHelp("Yes: list what would be deleted. No: permanently delete the listed releases. Releases kept forever or in progress are never deleted."),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			if v["older_than"] == "" && v["status"] == "" {
+				return nil, fmt.Errorf("set 'older than' and/or statuses")
+			}
+			args := []string{v["target"], "--level", v["level"]}
+			for _, opt := range [][2]string{{"--older-than", "older_than"}, {"--status", "status"}, {"--keep-latest", "keep_latest"}, {"--keep-successful", "keep_successful"}, {"--filter", "filter"}} {
+				if v[opt[1]] != "" {
+					args = append(args, opt[0], v[opt[1]])
+				}
+			}
+			if v["dry_run"] == "yes" {
+				return append(args, "--dry-run"), nil
+			}
+			return append(args, "--apply", "--yes"), nil
+		},
+	},
+	{
 		id: "upgrade-pipeline-tasks", description: "Upgrades a task to another major version after checking input compatibility.",
 		newFields: func() []*field {
 			return []*field{

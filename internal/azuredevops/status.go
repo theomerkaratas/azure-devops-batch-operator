@@ -14,12 +14,13 @@ type ReleaseEnvironmentStatus struct {
 
 // Release is a release run, with its per-stage statuses.
 type Release struct {
-	ID        int    `json:"id"`
-	Name      string `json:"name"`
-	CreatedOn string `json:"createdOn"`
-	Status    string `json:"status"`
-	Reason    string `json:"reason"`
-	CreatedBy struct {
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	CreatedOn   string `json:"createdOn"`
+	Status      string `json:"status"`
+	Reason      string `json:"reason"`
+	KeepForever bool   `json:"keepForever"`
+	CreatedBy   struct {
 		DisplayName string `json:"displayName"`
 	} `json:"createdBy"`
 	Environments []ReleaseEnvironmentStatus `json:"environments"`
@@ -101,4 +102,27 @@ func (c Config) FindDefinitionsUnderPath(target string) (project string, matched
 		}
 	}
 	return project, matched, nil
+}
+
+// ListReleasesPage returns one page of releases (newest first) with environment statuses. Pass the
+// ID of the last release of the previous page as continuation (0 for the first page).
+func (c Config) ListReleasesPage(project string, definitionID, top, continuation int) ([]Release, error) {
+	url := fmt.Sprintf(
+		"%s/_apis/release/releases?definitionId=%d&$top=%d&$expand=environments&queryOrder=descending&api-version=%s",
+		c.releaseProjectBaseURL(project), definitionID, top, c.apiVersion(),
+	)
+	if continuation > 0 {
+		url += fmt.Sprintf("&continuationToken=%d", continuation)
+	}
+	var list releasesListResponse
+	if err := c.Get(url, &list); err != nil {
+		return nil, err
+	}
+	return list.Value, nil
+}
+
+// DeleteRelease permanently deletes a release.
+func (c Config) DeleteRelease(project string, releaseID int) error {
+	url := fmt.Sprintf("%s/_apis/release/releases/%d?api-version=%s", c.releaseProjectBaseURL(project), releaseID, c.apiVersion())
+	return c.Delete(url)
 }
