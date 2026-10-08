@@ -57,10 +57,12 @@ var menuTree = []menuNode{
 		{label: "Deprecated tasks", description: "Find deprecated, disabled, missing, or unsupported tasks.", commandID: "detect-deprecated-tasks"},
 		{label: "Permissions audit", description: "Report who can view, edit, administer, trigger, approve, or delete pipelines.", commandID: "audit-pipeline-permissions"},
 		{label: "Policy audit", description: "Audit release pipelines against a YAML policy.", commandID: "audit-pipeline-policy"},
+		{label: "Inventory report", description: "Export stages, tasks, variables, pools, schedules, approvals and retention as text, JSON or CSV.", commandID: "report-pipeline-inventory"},
 	}},
 	{label: "Compare", description: "Compare pipelines or whole folders.", children: []menuNode{
 		{label: "Compare pipelines", description: "Compare variables, jobs, and tasks between two pipelines.", commandID: "compare-pipelines"},
 		{label: "Compare folders", description: "Compare release counts, names, and content between two folders.", commandID: "compare-folders"},
+		{label: "Detect drift", description: "Group differences across a folder against a reference or consensus.", commandID: "detect-pipeline-drift"},
 	}},
 	{label: "Update", description: "Modify pipeline configuration and organization.", children: []menuNode{
 		{label: "Pipeline variables", description: "Set or remove variables.", commandID: "update-pipeline-variables"},

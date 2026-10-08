@@ -189,6 +189,11 @@ func Run(o Options, comment string, mutate Mutator) error {
 	return nil
 }
 
+// FetchDetails fetches the raw definitions of defs (id -> definition) with bounded concurrency.
+func FetchDetails(cfg azuredevops.Config, project string, defs []azuredevops.ReleaseDefinition) (map[int]map[string]interface{}, error) {
+	return fetchDetails(cfg, project, defs)
+}
+
 // fetchDetails fetches raw definitions with up to 10 requests in flight.
 func fetchDetails(cfg azuredevops.Config, project string, defs []azuredevops.ReleaseDefinition) (map[int]map[string]interface{}, error) {
 	results := make(map[int]map[string]interface{}, len(defs))

@@ -236,6 +236,8 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `update-pipeline-schedule`
 - `update-pipeline-variables`
 - `update-pipeline-variable-groups`
+- `report-pipeline-inventory`
+- `detect-pipeline-drift`
 - `resume-batch`
 - `rollback-batch`
 - `list-batch-manifests`
@@ -258,6 +260,34 @@ the one the operation read. `rollback-batch` restores the captured definitions, 
 pipelines whose current revision is still the one the operation produced; anything edited since is
 reported and left alone. Secret variable values are masked by Azure DevOps, so a rollback cannot
 recover them.
+
+Produce an inventory of every pipeline under a folder for compliance reviews or migration planning:
+
+```console
+a22r report-pipeline-inventory 'Example.Project\TEST' --format csv --out inventory.csv
+a22r report-pipeline-inventory 'Example.Project' --format json --out inventory.json
+```
+
+The report covers stages (rank, conditions, pre/post approvals, retention), jobs (pool, demands,
+timeout), tasks (name and version), variables and variable groups, artifacts, triggers and
+schedules. `--format` is `text` (default), `json`, or `csv` (one row per pipeline stage). Variable
+names and secret flags are listed; values are left out unless you pass `--include-values` (JSON),
+and secret values are never available.
+
+Find configuration drift across a whole folder instead of comparing pipelines two at a time:
+
+```console
+a22r detect-pipeline-drift 'Example.Project\TEST'
+a22r detect-pipeline-drift 'Example.Project\TEST' --reference 'Example.Project\GOLDEN\Deploy'
+a22r detect-pipeline-drift 'Example.Project\TEST' --write-baseline baseline.json
+a22r detect-pipeline-drift 'Example.Project\TEST' --baseline baseline.json --fail-on-drift
+```
+
+Without `--reference` or `--baseline`, the baseline is the folder's own consensus: each setting's
+most common value, counted only when at least `--min-agreement` percent (default 60) of the
+pipelines agree. The report lists recurring drift patterns (one setting, how many pipelines share
+it), groups of pipelines that drift identically, and the drift count per pipeline. Edit a baseline
+written with `--write-baseline` to define your own standard, and use `--fail-on-drift` in CI.
 
 Synchronize selected parts of matching pipelines from a golden reference definition:
 
