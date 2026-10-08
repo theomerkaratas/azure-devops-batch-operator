@@ -25,6 +25,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/deletepipelinesteps"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/detectbrokenartifactreferences"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/detectdeprecatedtasks"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/detectpipelinedrift"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/detectpipelinevariableconflicts"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/enforcepipelinepolicy"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listbatchmanifests"
@@ -42,6 +43,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/renameormovepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/replacepipelinecontent"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/replacepipelinevariablegroups"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/reportpipelineinventory"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/restorepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/resumebatch"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/rollbackbatch"
@@ -73,6 +75,8 @@ var commands = map[string]func(){
 	"orchestrate-releases":               orchestratereleases.Main,
 	"audit-pipeline-policy":              auditpipelinepolicy.Main,
 	"backup-pipelines":                   backuppipelines.Main,
+	"detect-pipeline-drift":              detectpipelinedrift.Main,
+	"report-pipeline-inventory":          reportpipelineinventory.Main,
 	"restore-pipelines":                  restorepipelines.Main,
 	"resume-batch":                       resumebatch.Main,
 	"rollback-batch":                     rollbackbatch.Main,

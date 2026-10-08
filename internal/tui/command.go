@@ -1147,6 +1147,60 @@ var commandSpecs = []commandSpec{
 		},
 	},
 	{
+		id:          "report-pipeline-inventory",
+		description: "Inventory of stages, tasks, variables, pools, demands, schedules, artifacts, approvals and retention.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target (folder/pipeline path)", `e.g. Example.Project\TEST`, true),
+				choiceField("format", "Format", []string{"text", "json", "csv"}, 0).withHelp("CSV has one row per pipeline stage."),
+				textField("out", "Output file (optional)", "e.g. inventory.csv", false).withHelp("Leave empty to show the report here."),
+				textField("filter", "Name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				choiceField("level", "PAT level", readLevels(), 0).withHelp(levelHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"], "--format", v["format"]}
+			if v["out"] != "" {
+				args = append(args, "--out", v["out"])
+			}
+			if v["filter"] != "" {
+				args = append(args, "--filter", v["filter"])
+			}
+			return append(args, "--level", v["level"]), nil
+		},
+	},
+	{
+		id:          "detect-pipeline-drift",
+		description: "Compares a folder's pipelines to a reference, baseline file or their consensus and groups recurring drift.",
+		newFields: func() []*field {
+			return []*field{
+				textField("target", "Target folder", `e.g. Example.Project\TEST`, true),
+				textField("reference", "Reference pipeline (optional)", `e.g. Example.Project\GOLDEN\Deploy`, false).
+					withHelp("Leave empty to compare against the most common settings in the folder."),
+				textField("min_agreement", "Consensus agreement % (optional)", "default 60", false).
+					withHelp("Only used without a reference: share of pipelines that must agree for a setting to be the norm."),
+				textField("filter", "Name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				choiceField("level", "PAT level", readLevels(), 0).withHelp(levelHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{v["target"]}
+			if v["reference"] != "" {
+				args = append(args, "--reference", v["reference"])
+			}
+			if v["min_agreement"] != "" {
+				if n, err := strconv.Atoi(v["min_agreement"]); err != nil || n < 1 || n > 100 {
+					return nil, fmt.Errorf("agreement must be a whole number from 1 to 100")
+				}
+				args = append(args, "--min-agreement", v["min_agreement"])
+			}
+			if v["filter"] != "" {
+				args = append(args, "--filter", v["filter"])
+			}
+			return append(args, "--level", v["level"]), nil
+		},
+	},
+	{
 		id:          "create-files",
 		description: "Creates empty file(s) in a target folder, creating the folder if needed.",
 		newFields: func() []*field {
