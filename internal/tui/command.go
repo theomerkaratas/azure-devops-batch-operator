@@ -483,6 +483,31 @@ var writeCommandSpecs = []commandSpec{
 		},
 	},
 	{
+		id:          "create-project",
+		description: "Creates a new Azure DevOps team project",
+		newFields: func() []*field {
+			return []*field{
+				textField("name", "Project name", "Example.Project", true),
+				textField("description", "Description", "Optional", false),
+				choiceField("visibility", "Visibility", []string{"private", "public"}, 0),
+				textField("process_template", "Process template ID or name", "Organization default", false),
+				choiceField("source_control_type", "Source control", []string{"Git", "Tfvc"}, 0),
+				choiceField("level", "PAT level", writeLevels(), 0).withHelp(levelHelp),
+				boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{"--name", v["name"]}
+			for _, key := range []string{"description", "visibility", "process_template", "source_control_type"} {
+				if v[key] != "" {
+					args = append(args, "--"+strings.ReplaceAll(key, "_", "-"), v[key])
+				}
+			}
+			return writeTail(args, v), nil
+		},
+	},
+
+	{
 		id:          "create-powershell-pipeline",
 		description: "Creates a classic release pipeline made of ordered PowerShell tasks.",
 		newFields: func() []*field {

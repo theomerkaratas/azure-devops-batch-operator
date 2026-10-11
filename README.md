@@ -199,6 +199,7 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `clone-pipeline`
 - `clone-folder`
 - `compare-pipelines`
+- `create-project`
 - `create-files`
 - `create-powershell-pipeline`
 - `delete-pipelines`
@@ -527,3 +528,17 @@ Go 1.24.2 or newer is required.
 go build -o a22r ./cmd/a22r
 go test ./...
 ```
+
+### Create a team project
+
+```console
+a22r create-project 'Example.Project' --process-template Agile --dry-run
+a22r create-project --name 'Example.Project' --description 'Team project' --level manage -y
+```
+
+Defaults to private visibility and Git. `--process-template` accepts an ID or name;
+when omitted, the organization or collection default process is used. Use
+`--visibility public` or `--source-control-type Tfvc` when supported by your server.
+Dry-run makes no API calls. Creation waits up to 10 minutes for the asynchronous
+operation; a timeout does not cancel creation on the server. The TUI offers this
+command under Create → Team project.
