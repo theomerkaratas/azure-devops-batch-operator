@@ -31,7 +31,9 @@ type menuNode struct {
 }
 
 var menuTree = []menuNode{
-	{label: "Create", description: "Create pipelines, releases, or local files.", children: []menuNode{
+	{label: "Create", description: "Create projects, pipelines, releases, or local files.", children: []menuNode{
+		{label: "Release folders", description: "Create one or multiple release pipeline folders.", commandID: "create-folder"},
+		{label: "Team project", description: "Creates a new Azure DevOps team project", commandID: "create-project"},
 		{label: "PowerShell pipeline", description: "Create a release pipeline from PowerShell scripts.", commandID: "create-powershell-pipeline"},
 		{label: "Orchestrate releases", description: "Create releases in waves with concurrency, waiting, retries, and a summary.", commandID: "orchestrate-releases"},
 		{label: "Trigger release", description: "Create releases for matching pipelines.", commandID: "trigger-release"},

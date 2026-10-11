@@ -2,6 +2,7 @@ package azuredevops
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -17,7 +18,17 @@ func (c Config) Get(url string, out interface{}) error {
 
 // get is Get that also returns the response headers.
 func (c Config) get(url string, out interface{}) (http.Header, error) {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	return c.getContext(context.Background(), url, out)
+}
+
+// GetContext performs a GET bounded by ctx.
+func (c Config) GetContext(ctx context.Context, url string, out interface{}) error {
+	_, err := c.getContext(ctx, url, out)
+	return err
+}
+
+func (c Config) getContext(ctx context.Context, url string, out interface{}) (http.Header, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}

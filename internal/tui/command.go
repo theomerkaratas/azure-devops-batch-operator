@@ -483,6 +483,49 @@ var writeCommandSpecs = []commandSpec{
 		},
 	},
 	{
+		id:          "create-folder",
+		description: "Create one or multiple Azure DevOps release pipeline folders.",
+		newFields: func() []*field {
+			return []*field{
+				textField("project", "Existing project", "Example.Project", true),
+				textareaField("paths", "Folder path or JSON array", `["Folder1", "Folder 2"]`, 3, true).
+					withHelp(`Paths inside the project. For nested paths, escape backslashes in JSON: ["Deploy\\Services"]. Existing folders are accepted.`),
+				choiceField("level", "PAT level", writeLevels(), 0).withHelp(levelHelp),
+				boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			return writeTail([]string{"--project", v["project"], "--path", v["paths"]}, v), nil
+		},
+	},
+
+	{
+		id:          "create-project",
+		description: "Creates a new Azure DevOps team project",
+		newFields: func() []*field {
+			return []*field{
+				textareaField("name", "Project name or JSON array", `["Project1", "Project 2"]`, 3, true).
+					withHelp("Enter one name or a JSON array of names. Options apply to every project; creation stops on the first error."),
+				textField("description", "Description", "Optional", false),
+				choiceField("visibility", "Visibility", []string{"private", "public"}, 0),
+				textField("process_template", "Process template ID or name", "Organization default", false),
+				choiceField("source_control_type", "Source control", []string{"Git", "Tfvc"}, 0),
+				choiceField("level", "PAT level", writeLevels(), 0).withHelp(levelHelp),
+				boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			args := []string{"--name", v["name"]}
+			for _, key := range []string{"description", "visibility", "process_template", "source_control_type"} {
+				if v[key] != "" {
+					args = append(args, "--"+strings.ReplaceAll(key, "_", "-"), v[key])
+				}
+			}
+			return writeTail(args, v), nil
+		},
+	},
+
+	{
 		id:          "create-powershell-pipeline",
 		description: "Creates a classic release pipeline made of ordered PowerShell tasks.",
 		newFields: func() []*field {
