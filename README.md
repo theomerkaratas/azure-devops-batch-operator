@@ -521,15 +521,6 @@ a22r create-powershell-pipeline 'Example.Project\Deploy\Restart Services' \
 
 Replace `--pool WindowsAgents` with `--queue-id 42` when the project queue cannot be resolved by name. Add `--pwsh` to execute the tasks with PowerShell Core. The script files are embedded in the release definition, so the pipeline does not require a build artifact.
 
-## Build from source
-
-Go 1.24.2 or newer is required.
-
-```sh
-go build -o a22r ./cmd/a22r
-go test ./...
-```
-
 ### Create a team project
 
 ```console
@@ -551,6 +542,15 @@ All projects share the selected options. The batch is previewed and confirmed on
 then projects are created sequentially. Creation stops on the first error and reports
 how many projects completed; already-created projects are kept. Empty names, empty
 arrays, and duplicate names (ignoring case) are rejected before any API calls.
+
+## Build from source
+
+Go 1.24.2 or newer is required.
+
+```sh
+go build -o a22r ./cmd/a22r
+go test ./...
+```
 
 ### Create release pipeline folders
 
