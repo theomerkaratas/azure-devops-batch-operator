@@ -200,6 +200,7 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `clone-folder`
 - `compare-pipelines`
 - `create-project`
+- `create-folder`
 - `create-files`
 - `create-powershell-pipeline`
 - `delete-pipelines`
@@ -533,6 +534,7 @@ go test ./...
 
 ```console
 a22r create-project 'Example.Project' --process-template Agile --dry-run
+a22r create-project '["Project1", "Project 2"]' --process-template Agile --level manage -y
 a22r create-project --name 'Example.Project' --description 'Team project' --level manage -y
 ```
 
@@ -542,3 +544,26 @@ when omitted, the organization or collection default process is used. Use
 Dry-run makes no API calls. Creation waits up to 10 minutes for the asynchronous
 operation; a timeout does not cancel creation on the server. The TUI offers this
 command under Create → Team project.
+
+To create multiple projects, pass a JSON array as the positional argument or
+`--name` value. In the TUI, enter the same array in **Project name or JSON array**.
+All projects share the selected options. The batch is previewed and confirmed once,
+then projects are created sequentially. Creation stops on the first error and reports
+how many projects completed; already-created projects are kept. Empty names, empty
+arrays, and duplicate names (ignoring case) are rejected before any API calls.
+
+### Create release pipeline folders
+
+```console
+a22r create-folder '["Folder1", "Folder 2"]' --project 'Example.Project' --dry-run
+a22r create-folder '["Folder1", "Folder 2"]' --project 'Example.Project' --level manage -y
+a22r create-folder 'Deploy\Services' --project 'Example.Project' -y
+```
+
+Accepts one path or a JSON array, positional or via `--path`. These are release
+pipeline folders inside an existing project. In JSON, escape backslashes:
+`["Deploy\\Services", "Test"]`. The TUI offers **Create → Release folders** with
+the same array input. The batch is previewed and confirmed once; creation runs
+sequentially and stops on the first error, keeping completed folders. Existing
+folders are accepted. Dry-run makes no API calls. Empty and duplicate paths are
+rejected before creation.

@@ -19,6 +19,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/comparepipelines"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/copypipelinestage"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/createfiles"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/createfolder"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/createpowershellpipeline"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/createproject"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/deletepipelines"
@@ -77,6 +78,7 @@ const Name = "a22r"
 var version = "dev"
 
 var commands = map[string]func(){
+	"create-folder":                      createfolder.Main,
 	"create-project":                     createproject.Main,
 	"audit-pipeline-permissions":         auditpipelinepermissions.Main,
 	"orchestrate-releases":               orchestratereleases.Main,
@@ -139,6 +141,7 @@ var commands = map[string]func(){
 }
 
 var commandDescriptions = map[string]string{
+	"create-folder":                      "Create one or multiple Azure DevOps release pipeline folders.",
 	"create-project":                     "Creates a new Azure DevOps team project.",
 	"audit-pipeline-permissions":         "Audit release-pipeline permissions and flag broad or inconsistent access.",
 	"audit-pipeline-policy":              "Check release pipelines against a reusable YAML policy without changing them.",

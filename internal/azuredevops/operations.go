@@ -134,3 +134,25 @@ func (c Config) AbandonRelease(project string, releaseID int) error {
 	url := fmt.Sprintf("%s/_apis/release/releases/%d?api-version=%s", c.releaseProjectBaseURL(project), releaseID, c.apiVersion())
 	return c.Patch(url, map[string]string{"status": "abandoned", "comment": "Abandoned by azure-devops-batch-operator"}, nil)
 }
+
+// CreateFolders creates release folders sequentially and returns the number completed.
+// Existing folders count as completed; a failure stops the batch without rolling back.
+func (c Config) CreateFolders(project string, paths []string) (int, error) {
+	if strings.TrimSpace(project) == "" {
+		return 0, fmt.Errorf("project is required")
+	}
+	if len(paths) == 0 {
+		return 0, fmt.Errorf("at least one folder path is required")
+	}
+	for _, path := range paths {
+		if strings.TrimSpace(path) == "" {
+			return 0, fmt.Errorf("folder path is required")
+		}
+	}
+	for i, path := range paths {
+		if err := c.CreateFolder(project, path); err != nil {
+			return i, fmt.Errorf("create folder %q (%d/%d); %d folder(s) completed; stopping batch: %w", path, i+1, len(paths), i, err)
+		}
+	}
+	return len(paths), nil
+}
