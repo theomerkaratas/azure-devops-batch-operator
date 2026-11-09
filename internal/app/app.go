@@ -4,6 +4,7 @@ package app
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"sort"
 
@@ -29,6 +30,7 @@ import (
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/detectpipelinedrift"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/detectpipelinevariableconflicts"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/enforcepipelinepolicy"
+	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/exportreleasesteps"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listbatchmanifests"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelineagentjob"
 	"github.com/omerkaratas/azure-devops-go-automations/internal/commands/listpipelineschedule"
@@ -114,6 +116,7 @@ var commands = map[string]func(){
 	"validate-release-batch":             validatereleasebatch.Main,
 	"detect-pipeline-variable-conflicts": detectpipelinevariableconflicts.Main,
 	"enforce-pipeline-policy":            enforcepipelinepolicy.Main,
+	"export-release-steps":               exportreleasesteps.Main,
 	"list-pool-members":                  listpoolmembers.Main,
 	"list-pools":                         listpools.Main,
 	"list-releases":                      listreleases.Main,
@@ -162,6 +165,7 @@ var commandDescriptions = map[string]string{
 	"detect-pipeline-drift":              "Detect configuration drift against a reference, baseline, or folder consensus.",
 	"detect-pipeline-variable-conflicts": "Find inconsistent variable values and secret settings across pipelines.",
 	"enforce-pipeline-policy":            "Update matching pipelines to comply with a reusable YAML policy.",
+	"export-release-steps":               "Export release pipeline JSON and inline PowerShell/cmd step scripts to local files.",
 	"list-batch-manifests":               "List and inspect saved batch-operation manifests.",
 	"list-pipeline-agent-job":            "Show agent pools, demands, conditions, and timeouts for pipeline jobs.",
 	"list-pipeline-schedule":             "Show scheduled triggers configured on a release pipeline.",
@@ -233,13 +237,61 @@ func Main() {
 
 	run, ok := commands[args[0]]
 	if !ok {
-		fmt.Fprintf(os.Stderr, "unknown command %q\n\n", args[0])
-		usage(os.Stderr)
+		unknownCommand(os.Stderr, args[0])
 		os.Exit(2)
 	}
 	// Commands parse os.Args[1:] themselves.
 	os.Args = append([]string{args[0]}, args[1:]...)
 	run()
+}
+
+func unknownCommand(w io.Writer, name string) {
+	fmt.Fprintf(w, "unknown command %q\n", name)
+	if suggestion := suggestCommand(name); suggestion != "" {
+		fmt.Fprintf(w, "\nDid you mean %q?\n", suggestion)
+	}
+	fmt.Fprintf(w, "\nRun `%s help` for usage.\n", Name)
+}
+
+func suggestCommand(name string) string {
+	names := []string{"help", "--help", "-h", "version", "--version", "-v", "config-path", "tui"}
+	for command := range commands {
+		names = append(names, command)
+	}
+	sort.Strings(names)
+	best, bestDistance := "", 3
+	for _, candidate := range names {
+		if distance := editDistance(name, candidate); distance < bestDistance {
+			best, bestDistance = candidate, distance
+		}
+	}
+	return best
+}
+
+// editDistance counts insertions, deletions, substitutions, and adjacent swaps.
+func editDistance(a, b string) int {
+	x, y := []rune(a), []rune(b)
+	d := make([][]int, len(x)+1)
+	for i := range d {
+		d[i] = make([]int, len(y)+1)
+		d[i][0] = i
+	}
+	for j := range d[0] {
+		d[0][j] = j
+	}
+	for i := 1; i <= len(x); i++ {
+		for j := 1; j <= len(y); j++ {
+			cost := 0
+			if x[i-1] != y[j-1] {
+				cost = 1
+			}
+			d[i][j] = min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1]+cost)
+			if i > 1 && j > 1 && x[i-1] == y[j-2] && x[i-2] == y[j-1] {
+				d[i][j] = min(d[i][j], d[i-2][j-2]+1)
+			}
+		}
+	}
+	return d[len(x)][len(y)]
 }
 
 func runTUI() {
@@ -259,6 +311,7 @@ func usage(w *os.File) {
 	_, _ = fmt.Fprintf(w, "%s %s: batch operations for Azure DevOps release pipelines.\n\n", Name, version)
 	_, _ = fmt.Fprintf(w, "Usage:\n  %s                    start the interactive UI\n", Name)
 	_, _ = fmt.Fprintf(w, "  %s <command> [args]    run one command (see `%s <command> --help`)\n", Name, Name)
+	_, _ = fmt.Fprintf(w, "  %s help                show this help\n", Name)
 	_, _ = fmt.Fprintf(w, "  %s version             print the version\n\nCommands:\n", Name)
 	for _, name := range names {
 		_, _ = fmt.Fprintf(w, "  %-38s %s\n", name, commandDescriptions[name])

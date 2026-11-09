@@ -207,6 +207,7 @@ Pass `--level read`, `--level read-write`, or `--level manage` to select a parti
 - `delete-pipeline-steps`
 - `detect-pipeline-variable-conflicts`
 - `enforce-pipeline-policy`
+- `export-release-steps`
 - `list-pool-members`
 - `list-pools`
 - `list-releases`
@@ -542,6 +543,28 @@ All projects share the selected options. The batch is previewed and confirmed on
 then projects are created sequentially. Creation stops on the first error and reports
 how many projects completed; already-created projects are kept. Empty names, empty
 arrays, and duplicate names (ignoring case) are rejected before any API calls.
+
+### Export
+
+```console
+a22r export-release-steps 'Example.Project\Ara Yaygınlaştırma' --out ./exports --dry-run
+a22r export-release-steps 'Example.Project\DRC' 'Example.Project\Kesintisiz' --mode both --out ./exports
+```
+
+Exports matching release pipelines to local files without changing Azure DevOps.
+Pass one or more folders or pipeline paths. `--mode` chooses the output:
+
+- `json` (default): one `<id>_<name>.json` per pipeline with its full definition.
+- `scripts`: inline PowerShell steps as `.ps1` and Command Line steps as `.cmd`, in a
+  folder per pipeline. Files that run from a repository path are skipped and counted.
+- `both`: JSON and scripts.
+
+Files are written under `Project/Folder/...` below `--out`. `.ps1` files are UTF-8 with a
+byte order mark for Windows PowerShell 5.1. `.cmd` files use CRLF line endings and code page
+857. A step that contains a character code page 857 cannot represent stops that pipeline's
+export, and nothing is written for it. `--filter` narrows pipelines by name. The default PAT level
+is `read`. Dry-run lists the files without writing them. The TUI offers this command under
+Export → Release steps.
 
 ## Build from source
 

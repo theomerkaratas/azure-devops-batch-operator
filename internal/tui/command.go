@@ -133,6 +133,17 @@ func splitList(s string) []string {
 	return out
 }
 
+// splitLines splits a multi-line form value into trimmed, non-empty lines.
+func splitLines(s string) []string {
+	var out []string
+	for _, p := range strings.Split(s, "\n") {
+		if p = strings.TrimSpace(p); p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
 // writeTail appends the flags shared by all write commands: filter, level and dry-run/--yes.
 // The TUI's own Run action is the confirmation, so non-dry runs skip the stdin prompt.
 func writeTail(args []string, v map[string]string) []string {
@@ -1420,6 +1431,41 @@ var commandSpecs = []commandSpec{
 				args = append(args, "--filter", v["filter"])
 			}
 			return append(args, "--level", v["level"]), nil
+		},
+	},
+	{
+		id:          "export-release-steps",
+		description: "Exports release pipeline JSON and inline PowerShell or cmd step scripts to local files.",
+		newFields: func() []*field {
+			return []*field{
+				textareaField("targets", "Targets (one folder or pipeline per line)", `Example.Project\Ara Yaygınlaştırma`, 3, true).
+					withHelp("Each line is a folder (covers every pipeline beneath it) or one pipeline's full path."),
+				choiceField("mode", "Export format", []string{"json", "scripts", "both"}, 0).
+					withHelp("json: definition JSON. scripts: inline PowerShell (.ps1) and Command Line (.cmd) steps. both: both."),
+				textField("out", "Output folder", "e.g. ./exports", true).
+					withHelp("Local folder to write into. The project and folder structure is mirrored."),
+				textField("filter", "Name filter (optional)", "text in pipeline name", false).withHelp(filterHelp),
+				choiceField("level", "PAT level", readLevels(), 0).withHelp(levelHelp),
+				boolField("dry_run", "Dry run (preview only)", true).withHelp(dryRunHelp),
+			}
+		},
+		buildArgs: func(v map[string]string) ([]string, error) {
+			targets := splitLines(v["targets"])
+			if len(targets) == 0 {
+				return nil, fmt.Errorf("at least one target is required")
+			}
+			if strings.TrimSpace(v["out"]) == "" {
+				return nil, fmt.Errorf("output folder is required")
+			}
+			args := append(targets, "--out", v["out"], "--mode", v["mode"])
+			if v["filter"] != "" {
+				args = append(args, "--filter", v["filter"])
+			}
+			args = append(args, "--level", v["level"])
+			if v["dry_run"] == "yes" {
+				args = append(args, "--dry-run")
+			}
+			return args, nil
 		},
 	},
 	{
