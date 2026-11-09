@@ -103,6 +103,9 @@ var menuTree = []menuNode{
 		{label: "Roll back batch operation", description: "Restore definitions captured before an earlier batch update.", commandID: "rollback-batch"},
 		{label: "Batch manifests", description: "List saved batch operation manifests.", commandID: "list-batch-manifests"},
 	}},
+	{label: "Export", description: "Export pipeline definitions and step scripts to local files.", children: []menuNode{
+		{label: "Release steps", description: "Save pipeline JSON and inline PowerShell or cmd step scripts locally.", commandID: "export-release-steps"},
+	}},
 }
 
 func (m model) currentMenu() []menuNode {
